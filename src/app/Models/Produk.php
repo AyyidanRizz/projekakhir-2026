@@ -17,7 +17,7 @@ class Produk extends Model
         'harga',
         'is_active',
         'is_featured',
-        'stok',
+        'jumlah_stok',
         'sale',
     ];
 

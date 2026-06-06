@@ -25,7 +25,7 @@ class Pesanan extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function Items(){
+    public function items(){
         return $this->hasMany(PesananItem::class);
     }
 

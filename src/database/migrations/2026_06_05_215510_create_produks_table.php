@@ -20,7 +20,7 @@ return new class extends Migration
             $table->decimal('harga', 10, 2);
             $table->boolean('is_active')->default(true);
             $table->boolean('is_featured')->default(false);
-            $table->boolean('stok')->default(true);
+            $table->integer('jumlah_stok')->default(0);
             $table->boolean('sale')->default(false);
             $table->timestamps();
         });
