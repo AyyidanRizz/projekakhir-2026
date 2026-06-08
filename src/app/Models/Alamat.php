@@ -13,9 +13,8 @@ class Alamat extends Model
         'pesanan_id',
         'name',
         'no_telfon',
-        'nama_jalan',
+        'detail_jalan',
         'kota',
-        'provinsi',
         'kode_pos',
     ];
 

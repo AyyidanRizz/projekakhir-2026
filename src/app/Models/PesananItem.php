@@ -12,9 +12,9 @@ class PesananItem extends Model
     protected $fillable = [
         'pesanan_id',
         'produk_id',
-        "kuantitas",
-        'jumlah_satuan',
-        'jumlah_total',
+        "jumlah",
+        'harga_satuan',
+        'total',
     ];
 
     public function pesanan(){

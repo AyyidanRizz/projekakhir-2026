@@ -18,10 +18,8 @@ class AlamatResource extends Resource
     protected static ?string $model = Alamat::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-map-pin';
-    protected static ?string $navigationGroup = 'Toko';
-    protected static ?int $navigationSort=5;
-    protected static ?string $label = 'Alamat';
-    protected static ?string $pluralLabel = 'Alamat';
+    protected static ?string $navigationGroup = 'Manajemen';
+    protected static bool $shouldRegisterNavigation = false;
 
     public static function form(Form $form): Form
     {

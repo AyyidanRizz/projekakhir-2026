@@ -22,7 +22,7 @@ class KategoriResource extends Resource
     protected static ?string $model = Kategori::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
-    protected static ?string $navigationGroup = 'Toko';
+    protected static ?string $navigationGroup = 'Manajemen';
     protected static ?int $navigationSort=1;
     protected static ?string $label = 'Kategori';
     protected static ?string $pluralLabel = 'Kategori';

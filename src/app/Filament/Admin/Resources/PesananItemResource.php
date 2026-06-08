@@ -18,10 +18,8 @@ class PesananItemResource extends Resource
     protected static ?string $model = PesananItem::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-list-bullet';
-    protected static ?string $navigationGroup = 'Toko';
-    protected static ?int $navigationSort=4;
-    protected static ?string $label = 'Pesanan Item';
-    protected static ?string $pluralLabel = 'Pesanan Item';
+    protected static ?string $navigationGroup = 'Manajemen';
+    protected static bool $shouldRegisterNavigation = false;
     public static function form(Form $form): Form
     {
         return $form

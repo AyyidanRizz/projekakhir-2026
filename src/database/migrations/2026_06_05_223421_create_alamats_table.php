@@ -16,9 +16,8 @@ return new class extends Migration
             $table->foreignId('pesanan_id')->constrained('pesanans')->cascadeOnDelete();
             $table->string('name')->nullable();
             $table->string('no_telfon')->nullable();
-            $table->string('nama_jalan')->nullable();
+            $table->string('detail_alamat')->nullable();
             $table->string('kota')->nullable();
-            $table->string('provinsi')->nullable();
             $table->string('kode_pos')->nullable();
             $table->timestamps();
         });
