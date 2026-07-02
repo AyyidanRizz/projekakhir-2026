@@ -28,10 +28,12 @@ class OrdersResource extends Resource
                 Forms\Components\Select::make('user_id')
                     ->relationship('user', 'name')
                     ->required(),
-                Forms\Components\TextInput::make('order_number')
+                /*Forms\Components\TextInput::make('order_number')
                     ->required()
                     ->maxLength(255)
-                    ->unique(ignoreRecord: true),
+                    ->disabled()
+                    ->dehydrated(false) // agar tidak diupdate
+                    ->default(fn () => 'ORD-' . strtoupper(uniqid()) . '-' . time()),*/
                 Forms\Components\Select::make('akad')
                     ->options(Akad::class)
                     ->required(),
@@ -98,7 +100,11 @@ class OrdersResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            \App\Filament\Admin\Resources\OrdersResource\RelationManagers\ItemsRelationManager::class,
+            \App\Filament\Admin\Resources\OrdersResource\RelationManagers\DesignRelationManager::class,
+            \App\Filament\Admin\Resources\OrdersResource\RelationManagers\PaymentsRelationManager::class,
+            \App\Filament\Admin\Resources\OrdersResource\RelationManagers\RefundsRelationManager::class,
+            \App\Filament\Admin\Resources\OrdersResource\RelationManagers\ShippingRelationManager::class,
         ];
     }
 

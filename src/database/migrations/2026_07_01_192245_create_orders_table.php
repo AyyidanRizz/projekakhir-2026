@@ -22,7 +22,7 @@ return new class extends Migration
                 'menunggu_verifikasi_pembayaran',
                 'siap_produksi',
                 'sedang_diproduksi',
-                'selesai_produksi',
+                'selesai_produksi', 
                 'menunggu_pelunasan',
                 'menunggu_verifikasi_pelunasan',
                 'siap_kirim',

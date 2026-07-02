@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\OrderResource\RelationManagers;
+namespace App\Filament\Admin\Resources\OrdersResource\RelationManagers;
 
 use App\Enums\DesignStatus;
 use Filament\Forms;

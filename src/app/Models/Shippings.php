@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Courier;
 use Illuminate\Database\Eloquent\Model;
 
 class Shippings extends Model
@@ -13,6 +14,7 @@ class Shippings extends Model
         return [
             'shipped_at' => 'datetime',
             'delivered_at' => 'datetime',
+            'courier'=>Courier::class,
         ];
     }
 

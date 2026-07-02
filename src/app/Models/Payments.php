@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\PaymentStatus;
 use App\Enums\PaymentType;
+use App\Enums\PaymentMethod;
 use Illuminate\Database\Eloquent\Model;
 
 class Payments extends Model
@@ -18,6 +19,7 @@ class Payments extends Model
         return [
             'type' => PaymentType::class,
             'status' => PaymentStatus::class,
+            'payment_method' => PaymentMethod::class,
             'verified_at' => 'datetime',
         ];
     }

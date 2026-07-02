@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\OrderResource\RelationManagers;
+namespace App\Filament\Admin\Resources\OrdersResource\RelationManagers;
 
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -23,15 +23,28 @@ class ItemsRelationManager extends RelationManager
                 Forms\Components\TextInput::make('quantity')
                     ->required()
                     ->numeric()
-                    ->minValue(1),
+                    ->minValue(1)
+                    ->reactive()
+                    ->afterStateUpdated(function ($set, $get) {
+                        $unitPrice = $get('unit_price') ?? 0;
+                        $quantity = $get('quantity') ?? 1;
+                        $set('subtotal', $unitPrice * $quantity);
+                    }),
                 Forms\Components\TextInput::make('unit_price')
                     ->required()
                     ->numeric()
-                    ->prefix('Rp'),
+                    ->prefix('Rp')
+                    ->reactive()
+                    ->afterStateUpdated(function ($set, $get) {
+                        $unitPrice = $get('unit_price') ?? 0;
+                        $quantity = $get('quantity') ?? 1;
+                        $set('subtotal', $unitPrice * $quantity);
+                    }),
                 Forms\Components\TextInput::make('subtotal')
                     ->required()
                     ->numeric()
-                    ->prefix('Rp'),
+                    ->prefix('Rp')
+                    ->disabled(),
             ]);
     }
 

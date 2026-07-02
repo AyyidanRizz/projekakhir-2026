@@ -78,7 +78,7 @@ class ProductsResource extends Resource
     public static function getRelations(): array
     {
         return [
-            ProductsResource\RelationManagers\VariantsRelationManager::class,
+            \App\Filament\Admin\Resources\ProductsResource\Pages\RelationManagers\VariantsRelationManager::class,
         ];
     }
 

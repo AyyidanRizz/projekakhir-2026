@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained()->onDelete('cascade');
             $table->enum('type', ['full', 'dp', 'pelunasan']);
+            $table->enum('payment_method', ['virtual_account', 'qris'])->nullable();
             $table->decimal('amount', 15, 2);
             $table->enum('status', ['pending', 'verified', 'rejected'])->default('pending');
             $table->string('proof_file')->nullable(); // bukti transfer

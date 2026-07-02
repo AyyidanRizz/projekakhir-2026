@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources;
 
+use App\Enums\Courier;
 use App\Filament\Admin\Resources\ShippingsResource\Pages;
 use App\Filament\Admin\Resources\ShippingsResource\RelationManagers;
 use App\Models\Shippings;
@@ -23,7 +24,14 @@ class ShippingsResource extends Resource
     {
         return $form
             ->schema([
-                //
+                Forms\Components\Select::make('courier')
+                    ->options([
+                        'jne' => 'JNE',
+                        'jnt' => 'J&T Express',
+                        'grab_express' => 'GrabExpress',
+                        'go_send' => 'GoSend',
+                    ])
+                    ->required(),
             ]);
     }
 
@@ -31,7 +39,7 @@ class ShippingsResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('courier'),
             ])
             ->filters([
                 //

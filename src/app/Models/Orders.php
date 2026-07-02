@@ -8,6 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Orders extends Model
 {
+    protected static function booted()
+    {
+        static::creating(function ($order) {
+            $order->order_number = 'ORD-' . strtoupper(uniqid()) . '-' . time();
+        });
+    }
     protected $fillable = [
         'user_id', 'order_number', 'akad', 'status', 'total_price',
         'dp_amount', 'paid_amount', 'refund_amount', 'shipping_address',

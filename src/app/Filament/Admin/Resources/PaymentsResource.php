@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources;
 
+use App\Enums\PaymentMethod;
 use App\Filament\Admin\Resources\PaymentsResource\Pages;
 use App\Filament\Admin\Resources\PaymentsResource\RelationManagers;
 use App\Models\Payments;
@@ -23,7 +24,9 @@ class PaymentsResource extends Resource
     {
         return $form
             ->schema([
-                //
+                Forms\Components\Select::make('payment_method')
+                    ->options(PaymentMethod::class)
+                    ->required(),
             ]);
     }
 
@@ -31,7 +34,7 @@ class PaymentsResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('payment_method')->badge(),
             ])
             ->filters([
                 //
