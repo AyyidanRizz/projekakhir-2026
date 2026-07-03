@@ -24,9 +24,35 @@ class PaymentsResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('payment_method')
-                    ->options(PaymentMethod::class)
+                Forms\Components\Select::make('order_id')
+                    ->relationship('order', 'id')
+                    ->required()
+                    ->searchable()
+                    ->disabledOn('edit'),
+
+                Forms\Components\Select::make('type')
+                    ->options(\App\Enums\PaymentType::class)
                     ->required(),
+
+                Forms\Components\Select::make('payment_method')
+                    ->label('Metode Pembayaran')
+                    ->options(\App\Enums\PaymentMethod::class)
+                    ->required(),
+
+                Forms\Components\TextInput::make('amount')
+                    ->required()
+                    ->numeric()
+                    ->prefix('Rp'),
+
+                Forms\Components\Select::make('status')
+                    ->options(\App\Enums\PaymentStatus::class)
+                    ->required(),
+
+                Forms\Components\FileUpload::make('proof_file')
+                    ->directory('payment_proofs'),
+
+                Forms\Components\Textarea::make('notes')
+                    ->maxLength(65535),
             ]);
     }
 

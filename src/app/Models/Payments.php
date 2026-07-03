@@ -10,8 +10,15 @@ use Illuminate\Database\Eloquent\Model;
 class Payments extends Model
 {
     protected $fillable = [
-        'order_id', 'type', 'amount', 'status', 'proof_file',
-        'verified_by', 'verified_at', 'notes'
+        'order_id',
+        'type',
+        'payment_method',
+        'amount',
+        'status',
+        'proof_file',
+        'verified_by',
+        'verified_at',
+        'notes'
     ];
 
     protected function casts(): array

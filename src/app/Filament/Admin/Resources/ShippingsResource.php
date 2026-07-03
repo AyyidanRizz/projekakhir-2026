@@ -24,14 +24,40 @@ class ShippingsResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Select::make('order_id')
+                ->relationship('order', 'id')
+                ->required()
+                ->searchable()
+                ->disabledOn('edit'), // Kunci ketika mode edit agar tidak bisa dipindahkan ke order lain
+
                 Forms\Components\Select::make('courier')
-                    ->options([
-                        'jne' => 'JNE',
-                        'jnt' => 'J&T Express',
-                        'grab_express' => 'GrabExpress',
-                        'go_send' => 'GoSend',
-                    ])
+                    ->label('Kurir')
+                    ->options(\App\Enums\Courier::class) // Otomatis membaca enum kamu (JNE, JNT, dll)
                     ->required(),
+
+                Forms\Components\TextInput::make('tracking_number')
+                    ->label('No. Resi')
+                    ->maxLength(255),
+
+                // Tambahkan field text area alamat pengiriman jika ada di database kamu
+                Forms\Components\Textarea::make('shipping_address')
+                    ->label('Alamat Pengiriman')
+                    ->rows(3),
+
+                // Tambahkan field status pengiriman jika diperlukan
+                Forms\Components\Select::make('status')
+                    ->label('Status Pengiriman')
+                    ->options([
+                        'pending' => 'Pending',
+                        'shipped' => 'Shipped',
+                        'delivered' => 'Delivered',
+                    ]),
+
+                Forms\Components\DateTimePicker::make('shipped_at')
+                    ->label('Waktu Dikirim'),
+                    
+                Forms\Components\DateTimePicker::make('delivered_at')
+                    ->label('Waktu Diterima'),
             ]);
     }
 
