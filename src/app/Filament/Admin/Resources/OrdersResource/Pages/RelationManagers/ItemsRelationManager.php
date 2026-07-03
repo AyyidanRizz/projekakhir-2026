@@ -19,15 +19,30 @@ class ItemsRelationManager extends RelationManager
                 Forms\Components\Select::make('product_variant_id')
                     ->relationship('variant', 'id', fn ($query) => $query->with('product'))
                     ->getOptionLabelFromRecordUsing(fn ($record) => $record->product->name . ' - ' . $record->size . ' ' . $record->material)
-                    ->required(),
+                    ->required()
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, $set, $get) {
+                        // Ambil data varian dari database berdasarkan ID yang dipilih
+                        $variant = \App\Models\ProductsVariants::find($state);
+                        if ($variant) {
+                            // Asumsi di tabel products_variants kamu ada kolom 'price'
+                            $price = $variant->price ?? 0; 
+                            $set('unit_price', $price);
+                            
+                            // Langsung hitung subtotal awal
+                            $quantity = $get('quantity') ?? 1;
+                            $set('subtotal', $price * $quantity);
+                        }
+                    }),
                 Forms\Components\TextInput::make('quantity')
                     ->required()
                     ->numeric()
                     ->minValue(1)
                     ->reactive()
                     ->afterStateUpdated(function ($set, $get) {
-                        $unitPrice = $get('unit_price') ?? 0;
-                        $quantity = $get('quantity') ?? 1;
+                        // Paksa diubah menjadi Integer dan Float sebelum dikalikan
+                        $unitPrice = (float) ($get('unit_price') ?? 0);
+                        $quantity = (int) ($get('quantity') ?? 1);
                         $set('subtotal', $unitPrice * $quantity);
                     }),
                 Forms\Components\TextInput::make('unit_price')
@@ -36,8 +51,9 @@ class ItemsRelationManager extends RelationManager
                     ->prefix('Rp')
                     ->reactive()
                     ->afterStateUpdated(function ($set, $get) {
-                        $unitPrice = $get('unit_price') ?? 0;
-                        $quantity = $get('quantity') ?? 1;
+                        // Paksa diubah menjadi Integer dan Float sebelum dikalikan
+                        $unitPrice = (float) ($get('unit_price') ?? 0);
+                        $quantity = (int) ($get('quantity') ?? 1);
                         $set('subtotal', $unitPrice * $quantity);
                     }),
                 Forms\Components\TextInput::make('subtotal')
@@ -63,10 +79,20 @@ class ItemsRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()
+                    ->mutateFormDataUsing(function (array $data): array {
+                        // Paksa casting tipe data menjadi angka sebelum dikalikan
+                        $data['subtotal'] = (int)($data['quantity'] ?? 1) * (float)($data['unit_price'] ?? 0);
+                        return $data;
+                    }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->mutateFormDataUsing(function (array $data): array {
+                        // Paksa casting tipe data menjadi angka sebelum dikalikan
+                        $data['subtotal'] = (int)($data['quantity'] ?? 1) * (float)($data['unit_price'] ?? 0);
+                        return $data;
+                    }),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([

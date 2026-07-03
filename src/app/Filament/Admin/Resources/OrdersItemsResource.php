@@ -23,38 +23,59 @@ class OrdersItemsResource extends Resource
     {
         return $form
             ->schema([
-                // 1. Dropdown untuk memilih Order ID
-                Forms\Components\Select::make('order_id')
-                    ->relationship('order', 'id') // sesuaikan nama relasi di model Anda
-                    ->required()
-                    ->searchable(),
+            // TAMBAHKAN INI: Agar saat input manual di menu Orders Items, bisa pilih Order ID-nya
+            Forms\Components\Select::make('order_id')
+                ->relationship('order', 'id')
+                ->required()
+                ->searchable(),
 
-                // 2. Dropdown untuk memilih Varian Produk
-                Forms\Components\Select::make('products_variant_id')
-                    ->relationship('productVariant', 'size') // sesuaikan nama relasi & kolom yang mau dipamerkan
-                    ->label('Product Variant')
-                    ->required()
-                    ->searchable(),
+            Forms\Components\Select::make('product_variant_id')
+                ->relationship('variant', 'id', fn ($query) => $query->with('product'))
+                ->getOptionLabelFromRecordUsing(fn ($record) => $record->product->name . ' - ' . $record->size . ' ' . $record->material)
+                ->required(),
 
-                // 3. Input Jumlah (Quantity)
-                Forms\Components\TextInput::make('quantity')
-                    ->numeric()
-                    ->default(1)
-                    ->required(),
+            Forms\Components\TextInput::make('quantity')
+                ->required()
+                ->numeric()
+                ->minValue(1)
+                ->reactive()
+                ->afterStateUpdated(function ($set, $get) {
+                    $unitPrice = (float) ($get('unit_price') ?? 0);
+                    $quantity = (int) ($get('quantity') ?? 1);
+                    $set('subtotal', $unitPrice * $quantity);
+                }),
 
-                // 4. Input Harga (Price)
-                Forms\Components\TextInput::make('price')
-                    ->numeric()
-                    ->prefix('Rp')
-                    ->required(),
-            ]);
+            Forms\Components\TextInput::make('unit_price')
+                ->required()
+                ->numeric()
+                ->prefix('Rp')
+                ->reactive()
+                ->afterStateUpdated(function ($set, $get) {
+                    $unitPrice = (float) ($get('unit_price') ?? 0);
+                    $quantity = (int) ($get('quantity') ?? 1);
+                    $set('subtotal', $unitPrice * $quantity);
+                }),
+
+            Forms\Components\TextInput::make('subtotal')
+                ->required()
+                ->numeric()
+                ->prefix('Rp')
+                ->readOnly()
+                ->dehydrated(),
+        ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('order.id')->label('Order ID')->sortable(),
+                Tables\Columns\TextColumn::make('variant.product.name')->label('Product'),
+                Tables\Columns\TextColumn::make('variant.size'),
+                Tables\Columns\TextColumn::make('variant.material'),
+                Tables\Columns\TextColumn::make('quantity'),
+                Tables\Columns\TextColumn::make('unit_price')->money('IDR'),
+                Tables\Columns\TextColumn::make('subtotal')->money('IDR'),
             ])
             ->filters([
                 //

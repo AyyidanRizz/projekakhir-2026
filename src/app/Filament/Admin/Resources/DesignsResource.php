@@ -31,7 +31,14 @@ class DesignsResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('order_id')->label('Order ID')->sortable(),
+                Tables\Columns\ImageColumn::make('file_path') 
+                    ->label('Foto Design')
+                    ->disk('public')
+                    ->square()
+                    ->size(60),
+                Tables\Columns\TextColumn::make('notes')->label('Catatan')->limit(30),
+                Tables\Columns\TextColumn::make('created_at')->dateTime()->label('Tanggal Dibuat'),
             ])
             ->filters([
                 //

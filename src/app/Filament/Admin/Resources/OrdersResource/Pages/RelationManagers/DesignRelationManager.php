@@ -34,7 +34,12 @@ class DesignRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('file_path')->label('File'),
+                Tables\Columns\ImageColumn::make('file_path') // Sesuaikan 'file_path' dengan nama kolom di databasemu (di gambar tertulis File path)
+                ->label('File')
+                ->disk('public') // Sangat penting agar Filament mencari di storage/app/public
+                ->square()
+                ->size(60),
+                //Tables\Columns\TextColumn::make('file_path')->label('File'),
                 Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('uploaded_at')->dateTime(),
             ])

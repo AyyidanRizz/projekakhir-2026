@@ -31,7 +31,11 @@ class RefundsResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('order_id')->label('Order ID')->sortable(),
+                Tables\Columns\TextColumn::make('amount')->label('Jumlah Refund')->money('IDR'),
+                Tables\Columns\TextColumn::make('reason')->label('Alasan')->limit(30),
+                Tables\Columns\TextColumn::make('status')->label('Status')->badge(),
+                Tables\Columns\TextColumn::make('created_at')->dateTime()->label('Tanggal'),
             ])
             ->filters([
                 //

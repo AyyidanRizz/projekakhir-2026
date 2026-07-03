@@ -34,7 +34,11 @@ class PaymentsResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('payment_method')->badge(),
+                Tables\Columns\TextColumn::make('order_id')->label('Order ID')->sortable(),
+                Tables\Columns\TextColumn::make('amount')->label('Jumlah Bayar')->money('IDR'),
+                Tables\Columns\TextColumn::make('payment_method')->label('Metode Pembayaran')->badge(),
+                Tables\Columns\TextColumn::make('status')->label('Status')->badge(),
+                Tables\Columns\TextColumn::make('created_at')->dateTime()->label('Waktu Bayar'),
             ])
             ->filters([
                 //

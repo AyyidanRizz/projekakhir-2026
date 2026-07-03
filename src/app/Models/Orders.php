@@ -15,9 +15,17 @@ class Orders extends Model
         });
     }
     protected $fillable = [
-        'user_id', 'order_number', 'akad', 'status', 'total_price',
-        'dp_amount', 'paid_amount', 'refund_amount', 'shipping_address',
-        'note', 'order_date'
+        'user_id',
+        'order_number',
+        'akad',
+        'status',
+        'total_price',
+        'dp_amount',
+        'paid_amount',
+        'refund_amount',
+        'shipping_address',
+        'note',
+        'order_date'
     ];
 
     protected function casts(): array
@@ -36,26 +44,26 @@ class Orders extends Model
 
     public function items()
     {
-        return $this->hasMany(OrdersItems::class);
+        return $this->hasMany(OrdersItems::class, 'order_id');
     }
 
     public function design()
     {
-        return $this->hasOne(Designs::class);
+        return $this->hasOne(Designs::class, 'order_id');
     }
 
     public function payments()
     {
-        return $this->hasMany(Payments::class);
+        return $this->hasMany(Payments::class, 'order_id');
     }
 
     public function refunds()
     {
-        return $this->hasMany(Refunds::class);
+        return $this->hasMany(Refunds::class, 'order_id');
     }
 
     public function shipping()
     {
-        return $this->hasOne(Shippings::class);
+        return $this->hasOne(Shippings::class, 'order_id');
     }
 }

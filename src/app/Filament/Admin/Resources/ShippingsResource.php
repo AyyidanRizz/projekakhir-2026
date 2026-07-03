@@ -39,7 +39,11 @@ class ShippingsResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('courier'),
+                Tables\Columns\TextColumn::make('order_id')->label('Order ID')->sortable(),
+                Tables\Columns\TextColumn::make('courier')->label('Kurir')->searchable(),
+                Tables\Columns\TextColumn::make('tracking_number')->label('No. Resi')->placeholder('Belum ada resi'),
+                Tables\Columns\TextColumn::make('shipping_address')->label('Alamat Pengiriman')->limit(30),
+                Tables\Columns\TextColumn::make('status')->label('Status Pengiriman')->badge(),
             ])
             ->filters([
                 //
