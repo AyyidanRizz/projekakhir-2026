@@ -3,8 +3,8 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\ProductsVariantsResource\Pages;
-use App\Filament\Admin\Resources\ProductsVariantsResource\RelationManagers;
 use App\Models\ProductsVariants;
+use App\Models\Products;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -12,18 +12,23 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ProductsVariantsResource extends Resource
 {
     protected static ?string $model = ProductsVariants::class;
-    protected static string $relationship = 'variants';
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    protected static ?string $navigationIcon = 'heroicon-o-cube';
+
+    protected static ?string $navigationGroup = 'Manajemen Produk';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
+                Forms\Components\Select::make('product_id')
+                    ->relationship('product', 'name')
+                    ->required()
+                    ->searchable(),
                 Forms\Components\TextInput::make('size')
                     ->maxLength(255),
                 Forms\Components\TextInput::make('material')
@@ -33,6 +38,7 @@ class ProductsVariantsResource extends Resource
                     ->numeric()
                     ->prefix('Rp'),
                 Forms\Components\TextInput::make('stock')
+                    ->required()
                     ->numeric()
                     ->default(0),
             ]);
@@ -42,28 +48,50 @@ class ProductsVariantsResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('product.name')->label('Produk')->searchable(),
-                Tables\Columns\TextColumn::make('product.category.name')->label('Kategori'),
-                Tables\Columns\TextColumn::make('size'),
-                Tables\Columns\TextColumn::make('material'),
-                Tables\Columns\TextColumn::make('price')->money('IDR'),
+                Tables\Columns\TextColumn::make('product.name')
+                    ->label('Produk')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('product.category.name')
+                    ->label('Kategori'),
+                Tables\Columns\TextColumn::make('size')
+                    ->label('Ukuran')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('material')
+                    ->label('Material')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('price')
+                    ->label('Harga')
+                    ->money('IDR')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('stock')
+                    ->label('Stok')
                     ->badge()
-                    ->color(fn (string $state): string => match (true) {
+                    ->color(fn (int $state): string => match (true) {
                         $state <= 0 => 'danger',
                         $state <= 5 => 'warning',
                         default => 'success',
-                    }),
-                Tables\Columns\TextColumn::make('created_at')->dateTime(),
+                    })
+                    ->sortable(),
             ])
             ->filters([
                 // Filter Kategori
                 SelectFilter::make('category_id')
-                    ->label('Filter Kategori')
+                    ->label('Kategori')
                     ->relationship('product.category', 'name')
                     ->preload()
                     ->searchable(),
-                // Filter Stok (seperti di atas)
+
+                // Filter Produk (berdasarkan product_id)
+                SelectFilter::make('product_id')
+                    ->label('Produk')
+                    ->options(function () {
+                        return Products::pluck('name', 'id')->toArray();
+                    })
+                    ->searchable()
+                    ->preload(),
+
+                // Filter Stok
                 SelectFilter::make('stock_status')
                     ->label('Status Stok')
                     ->options([
@@ -82,7 +110,6 @@ class ProductsVariantsResource extends Resource
                     }),
             ])
             ->actions([
-                // Mengubah tombol aksi bawaan menjadi tombol titik tiga vertikal agar seragam dengan tabel lain
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
@@ -95,13 +122,6 @@ class ProductsVariantsResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
     }
 
     public static function getPages(): array

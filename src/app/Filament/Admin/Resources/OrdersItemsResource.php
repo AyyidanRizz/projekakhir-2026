@@ -17,7 +17,8 @@ class OrdersItemsResource extends Resource
 {
     protected static ?string $model = OrdersItems::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
+    protected static ?string $navigationGroup = 'Manajemen Pesanan';
 
     public static function form(Form $form): Form
     {
@@ -70,11 +71,14 @@ class OrdersItemsResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('order.id')->label('Order ID')->sortable(),
-                Tables\Columns\TextColumn::make('variant.product.name')->label('Product'),
-                Tables\Columns\TextColumn::make('variant.size'),
-                Tables\Columns\TextColumn::make('variant.material'),
-                Tables\Columns\TextColumn::make('quantity'),
-                Tables\Columns\TextColumn::make('unit_price')->money('IDR'),
+                Tables\Columns\TextColumn::make('order.order_number')
+                    ->label('Order')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('variant.product.name')->label('Produk'),
+                Tables\Columns\TextColumn::make('variant.size')->label('Ukuran'),
+                Tables\Columns\TextColumn::make('variant.material')->label('Material'),
+                Tables\Columns\TextColumn::make('quantity')->label('Jumlah'),
+                Tables\Columns\TextColumn::make('unit_price')->label('Harga Satuan')->money('IDR'),
                 Tables\Columns\TextColumn::make('subtotal')->money('IDR'),
             ])
             ->filters([

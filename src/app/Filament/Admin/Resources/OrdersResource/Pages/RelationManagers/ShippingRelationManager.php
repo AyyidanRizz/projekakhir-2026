@@ -17,19 +17,17 @@ class ShippingRelationManager extends RelationManager
         return $form
             ->schema([
                 Forms\Components\Select::make('courier')
-                ->label('Kurir')
-                ->options(\App\Enums\Courier::class) // Gunakan enum yang sama
-                ->required(),
-                
+                    ->options([
+                        'jne' => 'JNE',
+                        'jnt' => 'J&T Express',
+                        'grab_express' => 'GrabExpress',
+                        'go_send' => 'GoSend',
+                    ])
+                    ->required(),
                 Forms\Components\TextInput::make('tracking_number')
-                    ->label('No. Resi')
                     ->maxLength(255),
-                    
-                Forms\Components\DateTimePicker::make('shipped_at')
-                    ->label('Waktu Dikirim'),
-                    
-                Forms\Components\DateTimePicker::make('delivered_at')
-                    ->label('Waktu Diterima'),
+                Forms\Components\DateTimePicker::make('shipped_at'),
+                Forms\Components\DateTimePicker::make('delivered_at'),
             ]);
     }
 
@@ -53,13 +51,9 @@ class ShippingRelationManager extends RelationManager
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
                 ])
-                ->icon('heroicon-m-ellipsis-vertical') // Ini yang membuat ikonnya jadi titik tiga vertikal
+                ->icon('heroicon-m-ellipsis-vertical')
                 ->tooltip('Aksi'),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->bulkActions([]);
     }
 }

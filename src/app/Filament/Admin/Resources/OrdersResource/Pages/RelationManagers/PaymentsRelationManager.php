@@ -19,28 +19,31 @@ class PaymentsRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                // Opsi pilihan metode pembayaran untuk pembeli/admin
-                Forms\Components\Select::make('payment_method')
-                    ->label('Metode Pembayaran')
-                    ->options(\App\Enums\PaymentMethod::class)
+                Forms\Components\Select::make('type')
+                    ->options(PaymentType::class)
                     ->required(),
-
+                Forms\Components\Select::make('payment_method')
+                    ->options([
+                        'virtual_account' => 'Virtual Account (Transfer Bank)',
+                        'qris' => 'QRIS (E-Wallet)',
+                    ])
+                    ->required(),
+                Forms\Components\TextInput::make('amount')
+                    ->required()
+                    ->numeric()
+                    ->prefix('Rp'),
                 Forms\Components\Select::make('status')
                     ->options(PaymentStatus::class)
                     ->required()
                     ->default(PaymentStatus::PENDING),
-
                 Forms\Components\FileUpload::make('proof_file')
                     ->directory('payment_proofs')
                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'application/pdf']),
-
                 Forms\Components\Select::make('verified_by')
-                    ->relationship('verifier', 'name'),
-
+                    ->relationship('verifier', 'name')
+                    ->searchable(),
                 Forms\Components\DateTimePicker::make('verified_at'),
-
-                Forms\Components\Textarea::make('notes')
-                    ->maxLength(65535),
+                Forms\Components\Textarea::make('notes'),
             ]);
     }
 
@@ -49,69 +52,63 @@ class PaymentsRelationManager extends RelationManager
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('type')->badge(),
-                Tables\Columns\TextColumn::make('payment_method')
-                    ->label('Metode Pembayaran')
-                    ->badge()
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('payment_method')->badge(),
                 Tables\Columns\TextColumn::make('amount')->money('IDR'),
-                Tables\Columns\TextColumn::make('status')->badge(),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (\App\Enums\PaymentStatus $state): string => match ($state) {
+                        \App\Enums\PaymentStatus::PENDING => 'blue',
+                        \App\Enums\PaymentStatus::VERIFIED => 'green',
+                        \App\Enums\PaymentStatus::REJECTED => 'red',
+                        default => 'gray',
+                    }),
                 Tables\Columns\TextColumn::make('verified_at')->dateTime(),
             ])
             ->filters([
                 //
             ])
             ->headerActions([
-                // Tombol Tambah Pembayaran Baru di Atas Tabel
-                Tables\Actions\CreateAction::make()
-                    ->mutateFormDataUsing(function (array $data, $livewire): array {
-                        $order = $livewire->getOwnerRecord();
-
-                        // Otomatis mengisi data yang disembunyikan dari form menggunakan Enum yang benar
-                        $data['amount'] = $order->dp_amount > 0 ? $order->dp_amount : $order->total_price;
-                        $data['type'] = $order->dp_amount > 0 ? PaymentType::DP : PaymentType::FULL; 
-
-                        return $data;
-                    }),
+                Tables\Actions\CreateAction::make(),
             ])
             ->actions([
-                // Tombol Verifikasi Cepat
                 Tables\Actions\Action::make('verify')
                     ->button()
-                    ->action(fn ($record) => $record->update([
-                        'status' => PaymentStatus::VERIFIED, 
-                        'verified_at' => now(),
-                        'verified_by' => Auth::id()
-                    ]))
+                    ->label('Verifikasi')
+                    ->icon('heroicon-o-check')
+                    ->color('success')
+                    ->visible(fn ($record) => $record->status === PaymentStatus::PENDING)
+                    ->action(function ($record) {
+                        $record->update([
+                            'status' => PaymentStatus::VERIFIED,
+                            'verified_at' => now(),
+                            'verified_by' => Auth::id()
+                        ]);
+                        // Update order status ke siap_produksi
+                        $order = $record->order;
+                        $order->update(['status' => 'siap_produksi']);
+                        // Update paid_amount
+                        $order->increment('paid_amount', $record->amount);
+                    })
                     ->requiresConfirmation()
-                    ->color('success'),
-                    
-                // Tombol Tolak Cepat
-                Tables\Actions\Action::make('reject')
+                    ->modalHeading('Verifikasi Pembayaran'),
+                Tables\Actions\Action::make('reject_payment')
                     ->button()
-                    ->action(fn ($record) => $record->update(['status' => PaymentStatus::REJECTED]))
+                    ->label('Tolak')
+                    ->icon('heroicon-o-x-mark')
+                    ->color('danger')
+                    ->visible(fn ($record) => $record->status === PaymentStatus::PENDING)
+                    ->action(function ($record) {
+                        $record->update(['status' => PaymentStatus::REJECTED]);
+                    })
                     ->requiresConfirmation()
-                    ->color('danger'),
-
-                // Menu Dropdown Pilihan Tambahan
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\EditAction::make()
-                        ->mutateFormDataUsing(function (array $data, $livewire): array {
-                            $order = $livewire->getOwnerRecord();
-                            
-                            $data['amount'] = $order->dp_amount > 0 ? $order->dp_amount : $order->total_price;
-                            $data['type'] = $order->dp_amount > 0 ? PaymentType::DP : PaymentType::FULL; 
-                            
-                            return $data;
-                        }),
+                    ->modalHeading('Tolak Pembayaran'),
+                                    Tables\Actions\ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
                 ])
                 ->icon('heroicon-m-ellipsis-vertical')
                 ->tooltip('Aksi'),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->bulkActions([]);
     }
 }

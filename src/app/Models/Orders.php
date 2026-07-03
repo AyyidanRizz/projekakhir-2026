@@ -4,16 +4,13 @@ namespace App\Models;
 
 use App\Enums\Akad;
 use App\Enums\OrderStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Orders extends Model
 {
-    protected static function booted()
-    {
-        static::creating(function ($order) {
-            $order->order_number = 'ORD-' . strtoupper(uniqid()) . '-' . time();
-        });
-    }
+    use HasFactory;
+
     protected $fillable = [
         'user_id',
         'order_number',
@@ -25,52 +22,74 @@ class Orders extends Model
         'refund_amount',
         'shipping_address',
         'note',
-        'order_date'
+        'order_date',
     ];
 
-    protected function casts(): array
+    protected $casts = [
+        'akad' => Akad::class,
+        'status' => OrderStatus::class,
+        'order_date' => 'datetime',
+    ];
+
+    protected static function booted()
     {
-        return [
-            'akad' => Akad::class,
-            'status' => OrderStatus::class,
-            'order_date' => 'datetime',
-        ];
+        static::creating(function ($order) {
+            // Generate order number otomatis jika belum ada
+            if (empty($order->order_number)) {
+                $order->order_number = 'ORD-' . strtoupper(uniqid()) . '-' . time();
+            }
+        });
+    }
+
+    // Relasi ke user
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    // Relasi ke items
+    public function items()
+    {
+        return $this->hasMany(OrdersItems::class, 'order_id');
+    }
+
+    // Relasi ke design
+    public function design()
+    {
+        return $this->hasOne(Designs::class, 'order_id');
+    }
+
+    // Relasi ke payments
+    public function payment()
+    {
+        return $this->hasMany(Payments::class, 'order_id');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payments::class, 'order_id');
+    }
+
+    // Relasi ke refunds
+    public function refund()
+    {
+        return $this->hasMany(Refunds::class, 'order_id');
+    }
+
+    public function refunds()
+    {
+        return $this->hasMany(Refunds::class, 'order_id');
+    }
+
+    // Relasi ke shipping
+    public function shipping()
+    {
+        return $this->hasOne(Shippings::class, 'order_id');
     }
 
     /**
-     * Menghitung total kuantitas item dalam order ini.
+     * Mengembalikan stok semua item dalam order (saat order dibatalkan/ditolak)
      */
-    public function getTotalQuantityAttribute(): int
-    {
-        return $this->items()->sum('quantity');
-    }
-
-    /**
-     * Mengecek apakah pesanan memenuhi syarat untuk memilih Akad Istishna (>= 12 pcs).
-     */
-    public function isEligibleForIstishna(): bool
-    {
-        return $this->total_quantity >= 12;
-    }
-
-    /**
-     * Mengatur nilai DP secara otomatis berdasarkan akad yang dipilih.
-     * Panggil method ini sebelum order disimpan atau saat checkout selesai hitung harga.
-     */
-    public function calculatePaymentSchema(): void
-    {
-        if ($this->akad === \App\Enums\Akad::ISTISHNA) {
-            // Jika Istishna, DP adalah 50% dari total harga
-            $this->dp_amount = $this->total_price * 0.50;
-        } else {
-            // Jika Salam, tidak ada DP (harus lunas 100% di awal)
-            $this->dp_amount = 0;
-        }
-    }
-
-    /**
- * Kembalikan stok untuk semua item dalam order (saat order dibatalkan/ditolak)
- */
     public function restoreStock(): void
     {
         foreach ($this->items as $item) {
@@ -79,35 +98,5 @@ class Orders extends Model
                 $variant->increment('stock', $item->quantity);
             }
         }
-    }
-
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    public function items()
-    {
-        return $this->hasMany(OrdersItems::class, 'order_id');
-    }
-
-    public function design()
-    {
-        return $this->hasOne(Designs::class, 'order_id');
-    }
-
-    public function payments()
-    {
-        return $this->hasMany(Payments::class, 'order_id');
-    }
-
-    public function refunds()
-    {
-        return $this->hasMany(Refunds::class, 'order_id');
-    }
-
-    public function shipping()
-    {
-        return $this->hasOne(Shippings::class, 'order_id');
     }
 }

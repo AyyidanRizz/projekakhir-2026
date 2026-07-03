@@ -18,7 +18,8 @@ class ShippingsResource extends Resource
 {
     protected static ?string $model = Shippings::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-truck';
+    protected static ?string $navigationGroup = 'Manajemen Pesanan';
 
     public static function form(Form $form): Form
     {
@@ -39,11 +40,6 @@ class ShippingsResource extends Resource
                     ->label('No. Resi')
                     ->maxLength(255),
 
-                // Tambahkan field text area alamat pengiriman jika ada di database kamu
-                Forms\Components\Textarea::make('shipping_address')
-                    ->label('Alamat Pengiriman')
-                    ->rows(3),
-
                 // Tambahkan field status pengiriman jika diperlukan
                 Forms\Components\Select::make('status')
                     ->label('Status Pengiriman')
@@ -58,6 +54,10 @@ class ShippingsResource extends Resource
                     
                 Forms\Components\DateTimePicker::make('delivered_at')
                     ->label('Waktu Diterima'),
+
+                Forms\Components\Textarea::make('shipping_address')
+                    ->label('Alamat Pengiriman')
+                    ->rows(4),
             ]);
     }
 
@@ -66,6 +66,9 @@ class ShippingsResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('order_id')->label('Order ID')->sortable(),
+                Tables\Columns\TextColumn::make('order.order_number')
+                    ->label('Order')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('courier')->label('Kurir')->searchable(),
                 Tables\Columns\TextColumn::make('tracking_number')->label('No. Resi')->placeholder('Belum ada resi'),
                 Tables\Columns\TextColumn::make('shipping_address')->label('Alamat Pengiriman')->limit(30),

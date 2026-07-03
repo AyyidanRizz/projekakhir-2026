@@ -35,13 +35,16 @@ class AppServiceProvider extends ServiceProvider
         Page::formActionsAlignment(Alignment::Right);
         Notifications::alignment(Alignment::End);
         Notifications::verticalAlignment(VerticalAlignment::End);
+        
+        // 1. Set penanganan notifikasi error validasi
         Page::$reportValidationErrorUsing = function (ValidationException $exception) {
             Notification::make()
                 ->title($exception->getMessage())
                 ->danger()
                 ->send();
-        OrdersItems::observe(OrdersItemsObserver::class);
-        };
+        }; // <-- Kurung penutup fungsi di sini
+
+        // 3. Konfigurasi perataan tombol modal footer
         MountableAction::configureUsing(function (MountableAction $action) {
             $action->modalFooterActionsAlignment(Alignment::Right);
         });

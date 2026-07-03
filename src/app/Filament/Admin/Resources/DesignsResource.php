@@ -21,13 +21,30 @@ class DesignsResource extends Resource
 {
     protected static ?string $model = Designs::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-pencil-square';
+    protected static ?string $navigationGroup = 'Manajemen Produk';
+
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                //
+                Forms\Components\Select::make('order_id')
+                    ->relationship('order', 'id')
+                    ->required()
+                    ->searchable(),
+                Forms\Components\FileUpload::make('file_path')
+                    ->required()
+                    ->directory('designs')
+                    ->image()
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'application/pdf', 'image/vnd.adobe.photoshop', 'application/postscript']),
+                Forms\Components\Select::make('status')
+                    ->options(DesignStatus::class)
+                    ->required()
+                    ->default(DesignStatus::PENDING),
+                Forms\Components\Textarea::make('rejection_reason')
+                    ->maxLength(65535)
+                    ->visible(fn ($get) => $get('status') === 'rejected'),
             ]);
     }
 
@@ -35,29 +52,28 @@ class DesignsResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('order.order_number')->label('Order')->searchable(),
-                
-                // === SEKARANG MENGGUNAKAN IMAGE COLUMN ===
+                Tables\Columns\TextColumn::make('order.order_number')
+                    ->label('Order')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('order.id')->label('Order ID')->sortable(),
                 Tables\Columns\ImageColumn::make('file_path')
-                    ->label('Desain')
-                    ->square()             // Membuat bentuk kotak (opsional, bisa diganti ->circular())
-                    ->size(50)             // Mengatur ukuran gambar agar pas di tabel
-                    ->defaultImageUrl(url('/images/default-placeholder.png')), // Gambar cadangan jika file kosong
-                
-                Tables\Columns\TextColumn::make('status')->badge()
-                    ->colors([
-                        'warning' => DesignStatus::PENDING,
-                        'success' => DesignStatus::APPROVED,
-                        'danger' => DesignStatus::REJECTED,
-                    ]),
-                Tables\Columns\TextColumn::make('uploaded_at')->dateTime(),
+                    ->label('File Desain')
+                    ->disk('public'),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (DesignStatus $state): string => match ($state) {
+                        DesignStatus::PENDING => 'warning',
+                        DesignStatus::APPROVED => 'success',
+                        DesignStatus::REJECTED => 'danger',
+                    }),
+                Tables\Columns\TextColumn::make('uploaded_at')
+                    ->dateTime(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
                     ->options(DesignStatus::class),
             ])
             ->actions([
-                // Action Approve
                 Action::make('approve')
                     ->button()
                     ->label('Setujui')
@@ -73,8 +89,8 @@ class DesignsResource extends Resource
                     ->modalHeading('Setujui Desain')
                     ->modalDescription('Apakah Anda yakin ingin menyetujui desain ini?')
                     ->modalSubmitActionLabel('Ya, Setujui'),
-                
-                // Action Reject dengan Modal Form
+
+                // ==================== DISINI TEMPAT PERUBAHANNYA ====================
                 Action::make('reject')
                     ->button()
                     ->label('Tolak')
@@ -93,14 +109,26 @@ class DesignsResource extends Resource
                             'status' => DesignStatus::REJECTED,
                             'rejection_reason' => $data['rejection_reason'] ?? null,
                         ]);
+                        
                         // Update status order menjadi ditolak
                         $record->order->update(['status' => 'ditolak']);
+                        
+                        // Panggil method untuk mengembalikan stok
+                        $record->order->restoreStock();
+                        
+                        // OTOMATIS MEMBUAT DATA REFUND KE MENU REFUNDS
+                        $refundAmount = $record->order->payment?->amount ?? $record->order->total_price;
+                        $record->order->refund()->create([
+                            'amount' => $refundAmount,
+                            'reason' => 'Desain ditolak admin: ' . ($data['rejection_reason'] ?? 'Tidak ada alasan spesifik.'),
+                            'status' => 'pending', 
+                        ]);
                     })
                     ->requiresConfirmation()
                     ->modalHeading('Tolak Desain')
                     ->modalDescription('Apakah Anda yakin ingin menolak desain ini?')
                     ->modalSubmitActionLabel('Ya, Tolak'),
-                
+
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
@@ -111,7 +139,6 @@ class DesignsResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                    // Bulk approve
                     Tables\Actions\BulkAction::make('bulk_approve')
                         ->label('Setujui Terpilih')
                         ->icon('heroicon-o-check-circle')
@@ -125,7 +152,8 @@ class DesignsResource extends Resource
                             }
                         })
                         ->requiresConfirmation(),
-                    // Bulk reject
+                        
+                    // ==================== SINKRONISASI JUGA PADA AKSI MASSAL ====================
                     Tables\Actions\BulkAction::make('bulk_reject')
                         ->label('Tolak Terpilih')
                         ->icon('heroicon-o-x-circle')
@@ -145,19 +173,21 @@ class DesignsResource extends Resource
                                         'rejection_reason' => $data['rejection_reason'] ?? null,
                                     ]);
                                     $record->order->update(['status' => 'ditolak']);
+                                    $record->order->restoreStock();
+
+                                    // OTOMATIS REFUND MASSAL
+                                    $refundAmount = $record->order->payment?->amount ?? $record->order->total_price;
+                                    $record->order->refund()->create([
+                                        'amount' => $refundAmount,
+                                        'reason' => 'Desain ditolak massal oleh admin: ' . ($data['rejection_reason'] ?? 'Tidak ada alasan spesifik.'),
+                                        'status' => 'pending',
+                                    ]);
                                 }
                             }
                         })
                         ->requiresConfirmation(),
                 ]),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
     }
 
     public static function getPages(): array

@@ -15,6 +15,49 @@ class OrdersItems extends Model
         'subtotal',
     ];
 
+    /**
+     * Logika Siklus Hidup Model (Gantikan Fungsi Observer)
+     */
+    protected static function booted(): void
+    {
+        // 1. Ketika item pesanan baru dibuat -> Kurangi Stok Varian
+        static::created(function ($ordersItems) {
+            $variant = ProductsVariants::find($ordersItems->product_variant_id);
+            if ($variant) {
+                $variant->decrement('stock', $ordersItems->quantity);
+            }
+        });
+
+        // 2. Ketika jumlah item pesanan diubah -> Sesuaikan Stok Varian
+        static::updated(function ($ordersItems) {
+            if ($ordersItems->isDirty('quantity')) {
+                $oldQuantity = $ordersItems->getOriginal('quantity');
+                $newQuantity = $ordersItems->quantity;
+                $diff = $newQuantity - $oldQuantity;
+
+                $variant = ProductsVariants::find($ordersItems->product_variant_id);
+                if ($variant) {
+                    if ($diff > 0) {
+                        $variant->decrement('stock', $diff);
+                    } else {
+                        $variant->increment('stock', abs($diff));
+                    }
+                }
+            }
+        });
+
+        // 3. Ketika item pesanan dihapus -> Kembalikan Stok Varian
+        static::deleted(function ($ordersItems) {
+            $variant = ProductsVariants::find($ordersItems->product_variant_id);
+            if ($variant) {
+                $variant->increment('stock', $ordersItems->quantity);
+            }
+        });
+    }
+
+    /**
+     * Relasi Model
+     */
     public function order()
     {
         return $this->belongsTo(Orders::class, 'order_id');
@@ -27,8 +70,6 @@ class OrdersItems extends Model
 
     public function product(): BelongsTo
     {
-        // Parameter kedua adalah foreign key di tabel items Anda (misal: 'product_id')
-        // Parameter ketiga adalah primary key di tabel products (misal: 'id')
         return $this->belongsTo(Products::class, 'product_id'); 
     }
 }

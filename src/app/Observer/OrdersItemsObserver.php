@@ -12,7 +12,6 @@ class OrdersItemsObserver
      */
     public function created(OrdersItems $ordersItems): void
     {
-        // Kurangi stok produk varian
         $variant = ProductsVariants::find($ordersItems->product_variant_id);
         if ($variant) {
             $variant->decrement('stock', $ordersItems->quantity);
@@ -21,15 +20,15 @@ class OrdersItemsObserver
 
     /**
      * Handle the OrdersItems "updated" event.
+     * Jika quantity berubah, sesuaikan stok.
      */
     public function updated(OrdersItems $ordersItems): void
     {
-        // Jika quantity berubah, sesuaikan stok
         if ($ordersItems->wasChanged('quantity')) {
             $oldQuantity = $ordersItems->getOriginal('quantity');
             $newQuantity = $ordersItems->quantity;
             $diff = $newQuantity - $oldQuantity;
-            
+
             $variant = ProductsVariants::find($ordersItems->product_variant_id);
             if ($variant) {
                 if ($diff > 0) {
@@ -46,7 +45,6 @@ class OrdersItemsObserver
      */
     public function deleted(OrdersItems $ordersItems): void
     {
-        // Kembalikan stok saat item dihapus
         $variant = ProductsVariants::find($ordersItems->product_variant_id);
         if ($variant) {
             $variant->increment('stock', $ordersItems->quantity);
