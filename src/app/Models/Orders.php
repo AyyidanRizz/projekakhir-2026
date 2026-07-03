@@ -68,6 +68,19 @@ class Orders extends Model
         }
     }
 
+    /**
+ * Kembalikan stok untuk semua item dalam order (saat order dibatalkan/ditolak)
+ */
+    public function restoreStock(): void
+    {
+        foreach ($this->items as $item) {
+            $variant = ProductsVariants::find($item->product_variant_id);
+            if ($variant) {
+                $variant->increment('stock', $item->quantity);
+            }
+        }
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

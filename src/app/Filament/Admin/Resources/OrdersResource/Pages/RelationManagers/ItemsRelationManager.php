@@ -7,17 +7,20 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use App\Models\ProductsVariants;
+use App\Models\Products;
 
 class ItemsRelationManager extends RelationManager
 {
     protected static string $relationship = 'items';
+    protected static ?string $recordTitleAttribute = 'id';
 
     public function form(Form $form): Form
     {
         return $form
             ->schema([
                 // 1. Pilih Produk Utama terlebih dahulu
-                Forms\Components\Select::make('product_id')
+                /*Forms\Components\Select::make('product_id')
                     ->label('Product')
                     ->options(\App\Models\Products::all()->pluck('name', 'id'))
                     ->searchable()
@@ -69,6 +72,24 @@ class ItemsRelationManager extends RelationManager
                             
                             $quantity = $get('quantity') ?? 1;
                             $set('subtotal', $price * $quantity);
+                        }
+                    }),*/
+                
+                Forms\Components\Select::make('product_variant_id')
+                    ->label('Varian Produk')
+                    ->relationship('variant', 'id')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => 
+                        $record->product->name . ' - ' . $record->size . ' ' . $record->material . ' (Stok: ' . $record->stock . ')'
+                    )
+                    ->required()
+                    ->searchable()
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, Forms\Set $set) {
+                        if ($state) {
+                            $variant = ProductsVariants::find($state);
+                            if ($variant) {
+                                $set('unit_price', $variant->price);
+                            }
                         }
                     }),
 

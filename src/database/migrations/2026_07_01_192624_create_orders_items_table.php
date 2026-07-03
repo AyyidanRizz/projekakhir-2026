@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('orders_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('order_id')->constrained('orders')->cascadeOnDelete();
-            $table->foreignId('product_variant_id')->constrained('products_variants')->cascadeOnDelete();
+            $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
+            $table->foreignId('product_variant_id')->constrained('products_variants')->onDelete('cascade');
             $table->integer('quantity');
             $table->decimal('unit_price', 15, 2); // harga per unit saat order
             $table->decimal('subtotal', 15, 2); // quantity * unit_price

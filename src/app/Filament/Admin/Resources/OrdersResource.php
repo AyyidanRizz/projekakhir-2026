@@ -37,29 +37,38 @@ class OrdersResource extends Resource
                     ->required()
                     ->default(OrderStatus::MENUNGGU_VALIDASI_DESAIN),
 
-                // 1. INPUT REPEATER UNTUK PRODUK ITEMS
                 Forms\Components\Repeater::make('items')
                     ->relationship('items') 
                     ->schema([
 
-                        // A. FIELD SELEKSI JENIS PRODUK
+                        // === TAMBAHKAN FIELD INI AGAR BISA PILIH PRODUK ===
                         Forms\Components\Select::make('product_id')
-                            ->label('Jenis Produk')
+                            ->label('Produk')
+                            // Ambil opsi produk langsung dari Model Produk Anda (Sesuaikan nama modelnya, misal: Products)
                             ->options(\App\Models\Products::pluck('name', 'id')) 
                             ->required()
+                            ->searchable()
                             ->live()
+                            ->dehydrated(false) // Tetap jaga agar tidak disimpan
+                            ->formatStateUsing(function ($record) {
+                                // Otomatis memunculkan produk terpilih saat halaman Edit dibuka
+                                if ($record && $record->product_variant_id) {
+                                    return \App\Models\ProductsVariants::find($record->product_variant_id)?->product_id;
+                                }
+                                return null;
+                            })
                             ->afterStateUpdated(function (Set $set) {
-                                // Ketika jenis produk diganti, reset pilihan varian dan harga di baris yang sama
+                                // Reset varian jika produk utama diganti
                                 $set('product_variant_id', null);
-                                $set('unit_price', null);
+                                $set('unit_price', 0);
                                 $set('subtotal', 0);
                             }),
 
-                        // B. FIELD SELEKSI VARIAN PRODUK (Sudah disesuaikan dengan kolom database kamu)
+                        // B. FIELD SELEKSI VARIAN PRODUK
                         Forms\Components\Select::make('product_variant_id')
                             ->label('Varian Produk')
                             ->required()
-                            ->disabled(fn (Get $get) => !$get('product_id'))
+                            ->disabled(fn (Get $get) => !$get('product_id')) // Sekarang ini akan berfungsi karena product_id sudah ada
                             ->options(function (Get $get) {
                                 $productId = $get('product_id');
                                 
@@ -69,11 +78,12 @@ class OrdersResource extends Resource
 
                                 // Ambil data berdasarkan product_id, lalu buat label gabungan dari kolom 'size' dan 'material'
                                 return ProductsVariants::where('product_id', $productId)
+                                    ->where('stock', '>', 0) 
                                     ->get()
                                     ->mapWithKeys(function ($variant) {
                                         $label = trim(($variant->size ?? '') . ' - ' . ($variant->material ?? ''));
-                                        // Jika size & material kosong, gunakan default ID agar tidak kosong text-nya
                                         $label = $label ?: "Varian ID: {$variant->id}"; 
+                                        $label .= " (Stok: {$variant->stock})"; 
                                         
                                         return [$variant->id => $label];
                                     });
@@ -84,9 +94,13 @@ class OrdersResource extends Resource
                                     $variant = ProductsVariants::find($state);
                                     if ($variant) {
                                         $set('unit_price', $variant->price);
+                                        
+                                        // Hitung ulang subtotal saat varian dipilih
+                                        $qty = (int) ($get('quantity') ?? 1);
+                                        $set('subtotal', $qty * $variant->price);
                                     }
                                 }
-                                static::updateAkadDanHarga($set, $get);
+                                static::updateAkadDanHarga($set, $get, true);
                             }),
 
                         Forms\Components\TextInput::make('quantity')
@@ -96,7 +110,7 @@ class OrdersResource extends Resource
                             ->required()
                             ->live() 
                             ->afterStateUpdated(function ($state, Set $set, Get $get) {
-                // Update subtotal untuk baris ini
+                                // Update subtotal untuk baris ini
                                 $price = (float) ($get('unit_price') ?? 0);
                                 $set('subtotal', ((int) $state) * $price);
 
@@ -109,7 +123,7 @@ class OrdersResource extends Resource
                             ->required()
                             ->prefix('Rp')
                             ->live() 
-                        ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                            ->afterStateUpdated(function ($state, Set $set, Get $get) {
                                 // Update subtotal untuk baris ini
                                 $qty = (int) ($get('quantity') ?? 0);
                                 $set('subtotal', $qty * ((float) $state));
@@ -117,7 +131,7 @@ class OrdersResource extends Resource
                                 static::updateAkadDanHarga($set, $get, true);
                             }),
                         
-                // TAMBAHKAN FIELD SUB TOTAL (Hidden/Readonly agar terkirim ke database)
+                        // TAMBAHKAN FIELD SUB TOTAL (Hidden/Readonly agar terkirim ke database)
                         Forms\Components\TextInput::make('subtotal')
                             ->numeric()
                             ->prefix('Rp')
@@ -127,17 +141,18 @@ class OrdersResource extends Resource
                     ])
                     ->live() 
                     ->afterStateUpdated(function (Set $set, Get $get) {
-                        static::updateAkadDanHarga($set, $get, false);
+                        static::updateAkadDanHarga($set, $get, true);
                     })
-                    ->columnSpanFull(),
-
-                // 2. FIELD AKAD DINAMIS
+                    ->columnSpanFull(),               
+                    
+                    // 2. FIELD AKAD DINAMIS
                 Forms\Components\Select::make('akad')
                     ->required()
                     ->options([
                         'salam' => 'Akad Salam (Bayar 100%)',
                         'istishna' => 'Akad Istishna (DP 50%)',
                     ])
+                    ->default('salam')
                     ->live()
                     ->afterStateUpdated(function ($state, Set $set, Get $get) {
                         $totalPrice = (float) $get('total_price') ?? 0;
@@ -184,29 +199,35 @@ class OrdersResource extends Resource
             ]);
     }
 
-    protected static function updateAkadDanHarga(Set $set, Get $get)
+    protected static function updateAkadDanHarga(Set $set, Get $get, bool $updateAkad = true): void
     {
         $items = $get('items') ?? [];
-        
         $totalQuantity = 0;
         $totalPrice = 0;
-
+        
         foreach ($items as $item) {
             $qty = (int) ($item['quantity'] ?? 0);
             $price = (float) ($item['unit_price'] ?? 0);
-            
             $totalQuantity += $qty;
             $totalPrice += ($qty * $price);
         }
-
+        
         $set('total_price', $totalPrice);
-
-        if ($totalQuantity < 12) {
-            $set('akad', 'salam');
-            $set('dp_amount', 0);
+        
+        if ($updateAkad) {
+            if ($totalQuantity >= 12) {
+                $set('akad', 'istishna');
+                $set('dp_amount', $totalPrice * 0.5);
+            } else {
+                $set('akad', 'salam');
+                $set('dp_amount', 0);
+            }
         } else {
-            $set('akad', 'istishna');
-            $set('dp_amount', $totalPrice * 0.5);
+            if ($get('akad') === 'istishna') {
+                $set('dp_amount', $totalPrice * 0.5);
+            } else {
+                $set('dp_amount', 0);
+            }
         }
     }
 

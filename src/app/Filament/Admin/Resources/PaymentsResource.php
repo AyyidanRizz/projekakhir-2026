@@ -2,7 +2,7 @@
 
 namespace App\Filament\Admin\Resources;
 
-use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Filament\Admin\Resources\PaymentsResource\Pages;
 use App\Filament\Admin\Resources\PaymentsResource\RelationManagers;
 use App\Models\Payments;
@@ -60,11 +60,19 @@ class PaymentsResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('order_id')->label('Order ID')->sortable(),
-                Tables\Columns\TextColumn::make('amount')->label('Jumlah Bayar')->money('IDR'),
-                Tables\Columns\TextColumn::make('payment_method')->label('Metode Pembayaran')->badge(),
-                Tables\Columns\TextColumn::make('status')->label('Status')->badge(),
-                Tables\Columns\TextColumn::make('created_at')->dateTime()->label('Waktu Bayar'),
+                Tables\Columns\TextColumn::make('order.order_number')->label('Order')->searchable(),
+                Tables\Columns\TextColumn::make('type')->badge(),
+                Tables\Columns\TextColumn::make('payment_method')->badge(),
+                Tables\Columns\TextColumn::make('amount')->money('IDR'),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (\App\Enums\PaymentStatus $state): string => match ($state) {
+                        \App\Enums\PaymentStatus::PENDING => 'info',    // Warna Biru bawaan Filament
+                        \App\Enums\PaymentStatus::VERIFIED => 'success', // Warna Hijau bawaan Filament
+                        \App\Enums\PaymentStatus::REJECTED => 'danger',  // Warna Merah bawaan Filament
+                        default => 'gray',
+                    }),
+                Tables\Columns\TextColumn::make('verified_at')->dateTime(),
             ])
             ->filters([
                 //

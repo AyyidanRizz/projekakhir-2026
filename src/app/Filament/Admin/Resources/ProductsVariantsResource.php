@@ -10,6 +10,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -41,19 +42,44 @@ class ProductsVariantsResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('product.name')->label('Produk')->searchable(),
+                Tables\Columns\TextColumn::make('product.category.name')->label('Kategori'),
                 Tables\Columns\TextColumn::make('size'),
                 Tables\Columns\TextColumn::make('material'),
                 Tables\Columns\TextColumn::make('price')->money('IDR'),
-                Tables\Columns\TextColumn::make('stock'),
-                Tables\Columns\TextColumn::make('product.name')
-                ->label('Product Name')
-                ->searchable()
-                ->sortable(),
-                Tables\Columns\TextColumn::make('size'),
-                Tables\Columns\TextColumn::make('material'),
+                Tables\Columns\TextColumn::make('stock')
+                    ->badge()
+                    ->color(fn (string $state): string => match (true) {
+                        $state <= 0 => 'danger',
+                        $state <= 5 => 'warning',
+                        default => 'success',
+                    }),
+                Tables\Columns\TextColumn::make('created_at')->dateTime(),
             ])
             ->filters([
-                //
+                // Filter Kategori
+                SelectFilter::make('category_id')
+                    ->label('Filter Kategori')
+                    ->relationship('product.category', 'name')
+                    ->preload()
+                    ->searchable(),
+                // Filter Stok (seperti di atas)
+                SelectFilter::make('stock_status')
+                    ->label('Status Stok')
+                    ->options([
+                        'available' => 'Tersedia (Stok > 0)',
+                        'out_of_stock' => 'Habis (Stok = 0)',
+                        'low_stock' => 'Stok Menipis (<= 5)',
+                    ])
+                    ->query(function (Builder $query, array $data) {
+                        if ($data['value'] === 'available') {
+                            $query->where('stock', '>', 0);
+                        } elseif ($data['value'] === 'out_of_stock') {
+                            $query->where('stock', '=', 0);
+                        } elseif ($data['value'] === 'low_stock') {
+                            $query->where('stock', '>', 0)->where('stock', '<=', 5);
+                        }
+                    }),
             ])
             ->actions([
                 // Mengubah tombol aksi bawaan menjadi tombol titik tiga vertikal agar seragam dengan tabel lain

@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\OrdersItems;
+use App\Observers\OrdersItemsObserver;
 use App\Policies\ActivityPolicy;
 use Filament\Actions\MountableAction;
 use Filament\Notifications\Livewire\Notifications;
@@ -38,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
                 ->title($exception->getMessage())
                 ->danger()
                 ->send();
+        OrdersItems::observe(OrdersItemsObserver::class);
         };
         MountableAction::configureUsing(function (MountableAction $action) {
             $action->modalFooterActionsAlignment(Alignment::Right);
