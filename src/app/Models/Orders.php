@@ -37,6 +37,37 @@ class Orders extends Model
         ];
     }
 
+    /**
+     * Menghitung total kuantitas item dalam order ini.
+     */
+    public function getTotalQuantityAttribute(): int
+    {
+        return $this->items()->sum('quantity');
+    }
+
+    /**
+     * Mengecek apakah pesanan memenuhi syarat untuk memilih Akad Istishna (>= 12 pcs).
+     */
+    public function isEligibleForIstishna(): bool
+    {
+        return $this->total_quantity >= 12;
+    }
+
+    /**
+     * Mengatur nilai DP secara otomatis berdasarkan akad yang dipilih.
+     * Panggil method ini sebelum order disimpan atau saat checkout selesai hitung harga.
+     */
+    public function calculatePaymentSchema(): void
+    {
+        if ($this->akad === \App\Enums\Akad::ISTISHNA) {
+            // Jika Istishna, DP adalah 50% dari total harga
+            $this->dp_amount = $this->total_price * 0.50;
+        } else {
+            // Jika Salam, tidak ada DP (harus lunas 100% di awal)
+            $this->dp_amount = 0;
+        }
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

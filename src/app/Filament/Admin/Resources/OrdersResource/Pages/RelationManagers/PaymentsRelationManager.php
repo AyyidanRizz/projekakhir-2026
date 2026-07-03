@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentsRelationManager extends RelationManager
 {
@@ -18,20 +19,11 @@ class PaymentsRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('type')
-                    ->options(PaymentType::class)
-                    ->required(),
-
-                // TAMBAHKAN INI: Opsi pilihan metode pembayaran untuk pembeli/admin
+                // Opsi pilihan metode pembayaran untuk pembeli/admin
                 Forms\Components\Select::make('payment_method')
                     ->label('Metode Pembayaran')
                     ->options(\App\Enums\PaymentMethod::class)
                     ->required(),
-
-                Forms\Components\TextInput::make('amount')
-                    ->required()
-                    ->numeric()
-                    ->prefix('Rp'),
 
                 Forms\Components\Select::make('status')
                     ->options(PaymentStatus::class)
@@ -59,7 +51,7 @@ class PaymentsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('type')->badge(),
                 Tables\Columns\TextColumn::make('payment_method')
                     ->label('Metode Pembayaran')
-                    ->badge() // Opsional: Diberi badge agar tampilannya cantik seperti status
+                    ->badge()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('amount')->money('IDR'),
                 Tables\Columns\TextColumn::make('status')->badge(),
@@ -69,23 +61,51 @@ class PaymentsRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                // Tombol Tambah Pembayaran Baru di Atas Tabel
+                Tables\Actions\CreateAction::make()
+                    ->mutateFormDataUsing(function (array $data, $livewire): array {
+                        $order = $livewire->getOwnerRecord();
+
+                        // Otomatis mengisi data yang disembunyikan dari form menggunakan Enum yang benar
+                        $data['amount'] = $order->dp_amount > 0 ? $order->dp_amount : $order->total_price;
+                        $data['type'] = $order->dp_amount > 0 ? PaymentType::DP : PaymentType::FULL; 
+
+                        return $data;
+                    }),
             ])
             ->actions([
+                // Tombol Verifikasi Cepat
                 Tables\Actions\Action::make('verify')
-                    ->action(fn ($record) => $record->update(['status' => PaymentStatus::VERIFIED, 'verified_at' => now()]))
+                    ->button()
+                    ->action(fn ($record) => $record->update([
+                        'status' => PaymentStatus::VERIFIED, 
+                        'verified_at' => now(),
+                        'verified_by' => Auth::id()
+                    ]))
                     ->requiresConfirmation()
                     ->color('success'),
+                    
+                // Tombol Tolak Cepat
                 Tables\Actions\Action::make('reject')
+                    ->button()
                     ->action(fn ($record) => $record->update(['status' => PaymentStatus::REJECTED]))
                     ->requiresConfirmation()
                     ->color('danger'),
 
+                // Menu Dropdown Pilihan Tambahan
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\EditAction::make()
+                        ->mutateFormDataUsing(function (array $data, $livewire): array {
+                            $order = $livewire->getOwnerRecord();
+                            
+                            $data['amount'] = $order->dp_amount > 0 ? $order->dp_amount : $order->total_price;
+                            $data['type'] = $order->dp_amount > 0 ? PaymentType::DP : PaymentType::FULL; 
+                            
+                            return $data;
+                        }),
                     Tables\Actions\DeleteAction::make(),
                 ])
-                ->icon('heroicon-m-ellipsis-vertical') // Ini yang membuat ikonnya jadi titik tiga vertikal
+                ->icon('heroicon-m-ellipsis-vertical')
                 ->tooltip('Aksi'),
             ])
             ->bulkActions([

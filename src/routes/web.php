@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\OrdersController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 use Illuminate\Support\Facades\Response;
@@ -20,4 +21,8 @@ Livewire::setScriptRoute(function ($handle) {
 */
 Route::get('/', function () {
     return view('welcome');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('/orders', [OrdersController::class, 'store'])->name('orders.store');
 });
