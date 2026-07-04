@@ -24,10 +24,11 @@ class Payments extends Model
     protected function casts(): array
     {
         return [
-            'type' => PaymentType::class,
             'status' => PaymentStatus::class,
+            'type' => PaymentType::class,
             'payment_method' => PaymentMethod::class,
             'verified_at' => 'datetime',
+            'amount' => 'double',
         ];
     }
 

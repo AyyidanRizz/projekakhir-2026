@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources;
 use App\Enums\PaymentMethod;
 use App\Enums\Courier;
 use App\Models\Products; // Tambahkan ini jika belum di-import
+use App\Models\Refunds;
 use App\Enums\Akad;
 use App\Enums\OrderStatus;
 use App\Filament\Admin\Resources\OrdersResource\Pages;
@@ -19,6 +20,11 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\ValidationException;
+use Filament\Tables\Actions\Action;
+use Filament\Notifications\Notification;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
 
 class OrdersResource extends Resource
 {
@@ -96,7 +102,7 @@ public static function form(Form $form): Form
                                 // 1. Pilih Produk Terlebih Dahulu
                                 Forms\Components\Select::make('product_id')
                                     ->label('Produk')
-                                    ->options(Products::all()->pluck('name', 'id'))
+                                    ->options(Products::where('is_active', true)->pluck('name', 'id'))
                                     ->searchable()
                                     ->required()
                                     ->reactive()
@@ -290,6 +296,8 @@ public static function form(Form $form): Form
                     ->columnSpanFull(),
             ])
             ->columns(3);
+            //->disabled(fn ($record) => $record !== null);
+
     }
 
     /**
@@ -349,6 +357,7 @@ public static function form(Form $form): Form
                         'dikirim' => 'success',
                         'selesai' => 'success',
                         'ditolak' => 'danger',
+                        'dibatalkan'=>'danger',
                         default => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('total_price')
@@ -366,9 +375,130 @@ public static function form(Form $form): Form
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\EditAction::make(),
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\DeleteAction::make(),
+
+                    // Aksi Batalkan Pesanan
+                    Action::make('cancelOrder')
+                        ->label('Batalkan Pesanan')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->visible(fn ($record) => $record->canBeCancelled())
+                        ->form(function ($record) {
+                            $formFields = [];
+
+                            // Jika Istishna dan sudah dalam tahap produksi, urai per item barang
+                            if ($record->akad === Akad::ISTISHNA && $record->status === OrderStatus::DALAM_PRODUKSI) {
+                                $formFields[] = Placeholder::make('info_produksi')
+                                    ->label('Realisasi Produksi per Item')
+                                    ->content('Silakan masukkan jumlah item yang TELANJUR diproduksi untuk masing-masing tipe barang di bawah ini:');
+
+                                // Ambil detail item dari relasi (asumsi nama relasi: orderItems atau items)
+                                // Sesuaikan 'orderItems' dengan nama fungsi relasi di model Orders Anda
+                                foreach ($record->Items as $key => $item) {
+                                    $itemNumber = $key + 1;
+                                    $productName = $item->product?->name ?? 'Produk Unik';
+                                    $orderedQty = $item->qty ?? 0;
+                                    $formFields[] = TextInput::make("produced_qty_item_{$item->id}")
+                                        ->label("Qty Terproduksi: " . ($item->product?->name ?? 'Produk Unik') . " (Pesan: {$item->qty} pcs)")
+                                        ->numeric()
+                                        ->default(0)
+                                        ->required()
+                                        ->minValue(0)
+                                        ->maxValue($item->qty)
+                                        ->helperText("Masukkan berapa pcs yang sudah selesai dibuat dari total {$item->qty} pcs.");
+                                }
+                            }
+
+                            $formFields[] = Textarea::make('cancellation_note')
+                                ->label('Alasan Pembatalan')
+                                ->required();
+
+                            return $formFields;
+                        })
+                        ->action(function ($record, array $data) {
+                            $totalProducedQty = 0;
+                            $itemProductionDetails = [];
+
+                            // 1. Proses hitung kuantitas terproduksi per item jika ada
+                            if ($record->akad === Akad::ISTISHNA && $record->status === OrderStatus::DALAM_PRODUKSI) {
+                                $formFields[] = Forms\Components\Placeholder::make('info_produksi')
+                                    ->label('Realisasi Produksi per Item')
+                                    ->content('Silakan masukkan jumlah item yang TELANJUR diproduksi untuk masing-masing tipe barang di bawah ini:');
+                                
+                                foreach ($record->Items as $item) {
+                                    
+                                    $inputKey = "produced_qty_item_{$item->id}";
+                                    $qtyTerproduksi = isset($data[$inputKey]) ? (int) $data[$inputKey] : 0;
+                                    
+                                    $totalProducedQty += $qtyTerproduksi;
+                                    
+                                    // Simpan log detail per item untuk keperluan kalkulasi/gudang jika dibutuhkan
+                                    $itemProductionDetails[$item->id] = $qtyTerproduksi;
+                                    
+                                    // (Opsional) Jika model Anda mendukung restore stok per item secara langsung:
+                                    // $item->restoreItemStock($qtyTerproduksi);
+                                }
+                            }
+
+                            // 2. Hitung nominal kalkulasi refund via Model Orders (menggunakan total qty/logika internal Anda)
+                            $refundAmount = $record->calculateRefundAmount($totalProducedQty);
+
+                            // 3. Eksekusi pengembalian sisa stok ke gudang
+                            $record->restoreStock($totalProducedQty);
+
+                            // 4. Update data internal tabel Orders
+                            $record->status = OrderStatus::DIBATALKAN;
+                            $record->produced_qty_on_cancel = $totalProducedQty;
+                            $record->cancellation_note = $data['cancellation_note'];
+                            $record->refund_amount = $refundAmount;
+                            $record->save();
+
+                            // 5. MEMBUAT DATA REFUND BARU (Agar muncul di Dashboard Utama & Relation Manager)
+                            // Sesuaikan nama kolom di bawah dengan struktur migrasi tabel refunds Anda
+                            if ($refundAmount > 0) {
+                                Refunds::create([
+                                    'order_id' => $record->id,
+                                    'user_id' => $record->user_id, // Pelanggan yang menerima refund
+                                    'amount' => $refundAmount,
+                                    'reason' => $data['cancellation_note'],
+                                    'status' => 'pending', // atau status awal refund di sistem Anda
+                                    // 'created_at' otomatis terisi oleh Eloquent
+                                ]);
+                            }
+
+                            // 6. Kirim Notifikasi Sukses ke UI Filament dengan Nominal Angka
+                            Notification::make()
+                                ->title('Pesanan Berhasil Dibatalkan')
+                                ->body("Status pesanan kini dibatalkan. Nominal Refund dikeluarkan: Rp " . number_format($refundAmount, 0, ',', '.'))
+                                ->success()
+                                ->persistent() // Agar notifikasi tidak langsung hilang dan bisa dibaca admin
+                                ->send();
+                        }),
+
+                    // Aksi Ubah Status (Pastikan koma diletakkan setelah tutup kurung ) dari cancelOrder di atas)
+                    Tables\Actions\Action::make('ubahStatus')
+                        ->label('Ubah Status')
+                        ->icon('heroicon-o-arrow-path')
+                        ->color('warning')
+                        ->mountUsing(fn (Forms\ComponentContainer $form, $record) => $form->fill([
+                            'status' => $record->status,
+                        ]))
+                        ->form([
+                            Forms\Components\Select::make('status')
+                                ->label('Status Baru')
+                                ->options(OrderStatus::class)
+                                ->required(),
+                        ])
+                        ->action(function ($record, array $data): void {
+                            $record->update([
+                                'status' => $data['status'],
+                            ]);
+                            Notification::make()
+                                ->title('Status berhasil diperbarui')
+                                ->success()
+                                ->send();
+                        }),
                 ])
                 ->icon('heroicon-m-ellipsis-vertical')
                 ->tooltip('Aksi'),

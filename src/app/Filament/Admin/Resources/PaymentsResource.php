@@ -70,13 +70,15 @@ class PaymentsResource extends Resource
                     ->badge()
                     ->label('Metode'),
                 Tables\Columns\TextColumn::make('amount')
-                    ->money('IDR'),
+                    ->money('IDR', locale:'id_ID')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn (PaymentStatus $state): string => match ($state) {
                         PaymentStatus::PENDING => 'blue',
                         PaymentStatus::VERIFIED => 'green',
                         PaymentStatus::REJECTED => 'red',
+                        PaymentStatus::PARTIAL=>'amber',
                     }),
                 Tables\Columns\TextColumn::make('verified_at')
                     ->dateTime(),

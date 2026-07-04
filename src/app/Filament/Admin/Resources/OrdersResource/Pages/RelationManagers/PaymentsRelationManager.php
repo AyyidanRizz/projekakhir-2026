@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\OrdersResource\RelationManagers;
 
 use App\Enums\PaymentStatus;
 use App\Enums\PaymentType;
+use App\Enums\Akad; // Tambahkan namespace Akad jika belum ada
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -28,10 +29,28 @@ class PaymentsRelationManager extends RelationManager
                         'qris' => 'QRIS (E-Wallet)',
                     ])
                     ->required(),
+                
+                // --- PERBAIKAN DI FIELD AMOUNT ---
                 Forms\Components\TextInput::make('amount')
                     ->required()
                     ->numeric()
-                    ->prefix('Rp'),
+                    ->prefix('Rp')
+                    ->default(function ($livewire) {
+                        // Ambil record Order utama tempat RelationManager ini menempel
+                        $order = $livewire->getOwnerRecord();
+                        
+                        if ($order) {
+                            // Gunakan enum Akad::ISTISHNA murni untuk pengecekan object/value
+                            $akadValue = is_object($order->akad) ? $order->akad : Akad::tryFrom($order->akad);
+                            
+                            return $akadValue === Akad::ISTISHNA 
+                                ? $order->total_price * 0.5 
+                                : $order->total_price;
+                        }
+                        return 0;
+                    }),
+                // ---------------------------------
+
                 Forms\Components\Select::make('status')
                     ->options(PaymentStatus::class)
                     ->required()
@@ -49,17 +68,20 @@ class PaymentsRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
+        // Tetap gunakan table bawaan Anda karena sudah sangat lengkap dengan tombol aksi verifikasinya
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('type')->badge(),
                 Tables\Columns\TextColumn::make('payment_method')->badge(),
-                Tables\Columns\TextColumn::make('amount')->money('IDR'),
+                Tables\Columns\TextColumn::make('amount')
+                    ->money('IDR', locale:'id_ID'),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
                     ->color(fn (\App\Enums\PaymentStatus $state): string => match ($state) {
                         \App\Enums\PaymentStatus::PENDING => 'blue',
                         \App\Enums\PaymentStatus::VERIFIED => 'green',
                         \App\Enums\PaymentStatus::REJECTED => 'red',
+                        \App\Enums\PaymentStatus::PARTIAL => 'amber',
                         default => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('verified_at')->dateTime(),
@@ -102,7 +124,7 @@ class PaymentsRelationManager extends RelationManager
                     })
                     ->requiresConfirmation()
                     ->modalHeading('Tolak Pembayaran'),
-                                    Tables\Actions\ActionGroup::make([
+                Tables\Actions\ActionGroup::make([
                     Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
                 ])

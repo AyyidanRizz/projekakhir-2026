@@ -26,9 +26,12 @@ class ProductsResource extends Resource
                 Forms\Components\Section::make('Informasi Utama Produk')
                     ->schema([
                         Forms\Components\Select::make('category_id')
-                            ->relationship('category', 'name')
-                            ->required()
-                            ->searchable(),
+                            ->label('Kategori') // Memberikan label yang rapi di form
+                            ->relationship('category', 'name') // Mengambil data relasi dari model 'category' kolom 'name'
+                            ->searchable() // Mengaktifkan fitur pencarian di dalam dropdown
+                            ->preload() // 🔥 Trik Utama: Memuat data di awal agar langsung muncul saat diklik tanpa harus mengetik dulu
+                            ->placeholder('Pilih atau cari kategori...') // Teks bantuan di dalam select
+                            ->required(),
                         
                         Forms\Components\TextInput::make('name')
                             ->required()
@@ -71,15 +74,31 @@ class ProductsResource extends Resource
                             ->relationship('variants') // Menghubungkan langsung ke relasi hasMany 'variants'
                             ->label('Daftar Varian')
                             ->schema([
-                                Forms\Components\TextInput::make('size')
+                                Forms\Components\Select::make('size')
                                     ->label('Ukuran')
-                                    ->placeholder('Contoh: S, M, L, XL atau All Size')
-                                    ->maxLength(255),
+                                    ->options([
+                                        'S' => 'S',
+                                        'M' => 'M',
+                                        'L' => 'L',
+                                        'XL' => 'XL',
+                                        'XXL' => 'XXL',
+                                        '3XL' => '3XL',
+                                        'All Size' => 'All Size',
+                                    ])
+                                    ->placeholder('Pilih Ukuran')
+                                    ->searchable(),
                                 
-                                Forms\Components\TextInput::make('material')
-                                    ->label('Bahan / Material')
-                                    ->placeholder('Contoh: Cotton Combed, Canvas')
-                                    ->maxLength(255),
+                                Forms\Components\Select::make('material')
+                                    ->label('Bahan')
+                                    ->options([
+                                        'Cotton Combed 30s' => 'Cotton Combed 30s',
+                                        'Cotton Combed 24s' => 'Cotton Combed 24s',
+                                        'Canvas' => 'Canvas',
+                                        'Denim' => 'Denim',
+                                        'Fleece' => 'Fleece',
+                                    ])
+                                    ->placeholder('Pilih Bahan')
+                                    ->searchable(),
                                 
                                 Forms\Components\TextInput::make('price')
                                     ->label('Harga Final Varian')
@@ -90,6 +109,7 @@ class ProductsResource extends Resource
                                 Forms\Components\TextInput::make('stock')
                                     ->label('Stok')
                                     ->numeric()
+                                    ->required()
                                     ->default(0),
                             ])
                             ->columns(4) // Membagi menjadi 4 kolom horizontal agar rapi dan hemat space

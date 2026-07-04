@@ -27,9 +27,7 @@ class OrdersItemsResource extends Resource
             // TAMBAHKAN INI: Agar saat input manual di menu Orders Items, bisa pilih Order ID-nya
             Forms\Components\Select::make('order_id')
                 ->relationship('order', 'id')
-                ->required()
-                ->searchable(),
-
+                ->required(),
             Forms\Components\Select::make('product_variant_id')
                 ->relationship('variant', 'id', fn ($query) => $query->with('product'))
                 ->getOptionLabelFromRecordUsing(fn ($record) => $record->product->name . ' - ' . $record->size . ' ' . $record->material)
@@ -70,10 +68,10 @@ class OrdersItemsResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('order.id')->label('Order ID')->sortable(),
+                Tables\Columns\TextColumn::make('order.id')
+                    ->label('Order ID'),
                 Tables\Columns\TextColumn::make('order.order_number')
-                    ->label('Order')
-                    ->searchable(),
+                    ->label('Order'),
                 Tables\Columns\TextColumn::make('variant.product.name')->label('Produk'),
                 Tables\Columns\TextColumn::make('variant.size')->label('Ukuran'),
                 Tables\Columns\TextColumn::make('variant.material')->label('Material'),
@@ -82,7 +80,11 @@ class OrdersItemsResource extends Resource
                 Tables\Columns\TextColumn::make('subtotal')->money('IDR'),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('order_id')
+                    ->label('Filter Berdasarkan Order')
+                    ->relationship('order', 'id') // Menampilkan nomor order di opsi pilihan
+                    ->searchable() // Opsional: Agar user bisa mengetik/mencari jika data order sangat banyak
+                    ->preload(),
             ])
             ->actions([
                 // Mengubah tombol aksi bawaan menjadi tombol titik tiga vertikal agar seragam dengan tabel lain

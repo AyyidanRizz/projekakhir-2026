@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources;
 
 use App\Enums\DesignStatus;
+use App\Enums\OrderStatus;
 use App\Filament\Admin\Resources\DesignsResource\Pages;
 use App\Filament\Admin\Resources\DesignsResource\RelationManagers;
 use App\Models\Designs;
@@ -111,14 +112,17 @@ class DesignsResource extends Resource
                         ]);
                         
                         // Update status order menjadi ditolak
-                        $record->order->update(['status' => 'ditolak']);
+                        $record->order->update([
+                            'status' => \App\Enums\OrderStatus::DIBATALKAN]);
                         
                         // Panggil method untuk mengembalikan stok
                         $record->order->restoreStock();
                         
                         // OTOMATIS MEMBUAT DATA REFUND KE MENU REFUNDS
-                        $refundAmount = $record->order->payment?->amount ?? $record->order->total_price;
+// SINKRONISASI TYPO: ganti firts() menjadi first()
+                        $refundAmount = $record->order->payment->first()?->amount ?? $record->order->total_price;                        
                         $record->order->refund()->create([
+                            'user_id' => $record->order->user_id,
                             'amount' => $refundAmount,
                             'reason' => 'Desain ditolak admin: ' . ($data['rejection_reason'] ?? 'Tidak ada alasan spesifik.'),
                             'status' => 'pending', 
