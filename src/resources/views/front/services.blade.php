@@ -13,9 +13,9 @@
 							</div>
 						</div>
 						<div class="col-lg-7">
-							<div class="hero-img-wrap">
+							<!--<div class="hero-img-wrap">
 								<img src="{{ asset('front/images/couch.png') }}" class="img-fluid">
-							</div>
+							</div>-->
 						</div>
 					</div>
 				</div>

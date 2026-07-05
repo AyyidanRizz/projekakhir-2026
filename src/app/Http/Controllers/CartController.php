@@ -3,58 +3,174 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Products;
-use App\Models\ProductsVariants;
+use App\Models\Products; 
+use App\Models\ProductsVariants; // Pastikan nama model varian kamu sesuai
 
 class CartController extends Controller
 {
-    /**
-     * Menambahkan produk dan variannya ke dalam keranjang (Session)
-     */
-    public function add(Request $request)
+    public function index()
     {
-        // 1. Validasi input yang dikirim dari form
+        $cart = session()->get('cart', []);
+        $subtotal = 0;
+        foreach ($cart as $item) {
+            $subtotal += $item['price'] * $item['quantity'];
+        }
+        return view('front.cart', compact('cart', 'subtotal'));
+    }
+
+    // 1. TAMBAH KE KERANJANG & POTONG STOK DI DATABASE
+    public function add(Request $request, $id)
+    {
+        $product = Products::findOrFail($id);
+        
         $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'variant_id' => 'required|exists:products_variants,id',
+            'variant_id' => 'required',
+            'quantity' => 'required|integer|min:1'
         ]);
 
-        // 2. Ambil data produk dan varian secara detail dari database
-        $product = Products::findOrFail($request->product_id);
-        $variant = ProductsVariants::findOrFail($request->variant_id);
-
-        // 3. Cek apakah stok varian tersebut masih tersedia
-        if ($variant->stock <= 0) {
-            return redirect()->back()->with('error', 'Maaf, stok untuk varian ini sudah habis!');
+        $qtyRequested = intval($request->quantity);
+        $variant = $product->variants()->where('id', $request->variant_id)->firstOrFail();
+        
+        // Cek apakah stok mencukupi untuk jumlah yang diminta pembeli
+        if ($variant->stock < $qtyRequested) {
+            return redirect()->back()->with('error', 'Stok tidak cukup. Hanya tersisa ' . $variant->stock . ' item.');
         }
 
-        // 4. Ambil data keranjang yang saat ini ada di Session (jika belum ada, buat array kosong)
+        $cartKey = $id . '_' . $request->variant_id;
         $cart = session()->get('cart', []);
 
-        // Membuat unique ID untuk item di keranjang (gabungan ID produk dan ID varian)
-        $cartItemId = $product->id . '-' . $variant->id;
-
-        // 5. Logika: Jika barang dengan varian yang sama SUDAH ADA di keranjang, tambah jumlahnya (quantity)
-        if (isset($cart[$cartItemId])) {
-            $cart[$cartItemId]['quantity']++;
+        if (isset($cart[$cartKey])) {
+            // Cek lagi kalau digabung apakah melebihi stok
+            if ($variant->stock < ($cart[$cartKey]['quantity'] + $qtyRequested)) {
+                return redirect()->back()->with('error', 'Gagal menambah. Jumlah di keranjang melebihi stok tersedia.');
+            }
+            $cart[$cartKey]['quantity'] += $qtyRequested;
         } else {
-            // Jika BELUM ADA, masukkan data baru ke dalam array keranjang
-            $cart[$cartItemId] = [
-                "product_id" => $product->id,
-                "variant_id" => $variant->id,
-                "name"       => $product->name,
-                "size"       => $variant->size,
-                "material"   => $variant->material,
-                "quantity"   => 1,
-                "price"      => $variant->price, // Menggunakan harga final milik varian
-                "image"      => $product->image
+            $cart[$cartKey] = [
+                "product_id" => $id,
+                "variant_id" => $request->variant_id,
+                "name" => $product->name,
+                "variant_name" => ($variant->size ?? 'All Size') . ' - ' . ($variant->material ?? 'Bahan'),
+                "quantity" => $qtyRequested,
+                "price" => $variant->price * 1000,
+                "image" => $product->image
             ];
         }
 
-        // 6. Simpan kembali array keranjang yang terbaru ke dalam Session
-        session()->put('cart', $cart);
+        // AKSI POTONG STOK: Kurangi sebanyak quantity yang diinput pembeli
+        $variant->decrement('stock', $qtyRequested);
 
-        // 7. Kembalikan user ke halaman sebelumnya dengan pesan sukses
-        return redirect()->back()->with('success', 'Produk berhasil ditambahkan ke keranjang belanja!');
+        session()->put('cart', $cart);
+        return redirect()->back()->with('success', 'Produk berhasil dimasukkan ke keranjang!');
+    }
+
+    // 2. HAPUS DARI KERANJANG & KEMBALIKAN STOK KE DATABASE
+    public function remove($key)
+    {
+        $cart = session()->get('cart', []);
+
+        if (isset($cart[$key])) {
+            // Ambil data quantity yang ada di dalam keranjang sebelum dihapus
+            $quantityDiCart = $cart[$key]['quantity'];
+            $variantId = $cart[$key]['variant_id'];
+
+            // Cari varian produknya di database
+            $variant = ProductsVariants::find($variantId);
+            if ($variant) {
+                // AKSI KEMBALIKAN STOK: Tambah kembali stok di database sesuai jumlah di cart
+                $variant->increment('stock', $quantityDiCart);
+            }
+
+            // Hapus dari session keranjang
+            unset($cart[$key]);
+            session()->put('cart', $cart);
+        }
+
+        return redirect()->back()->with('success', 'Produk dihapus dan stok telah dikembalikan.');
+    }
+
+    // 3. BELI INSTANT (DIRECT CHECKOUT) & POTONG STOK
+    public function buyNow(Request $request, $id)
+    {
+        $product = Products::findOrFail($id);
+        
+        $request->validate([
+            'variant_id' => 'required',
+            'quantity' => 'required|integer|min:1'
+        ]);
+
+        $qtyRequested = intval($request->quantity);
+        $variant = $product->variants()->where('id', $request->variant_id)->firstOrFail();
+        
+        if ($variant->stock < $qtyRequested) {
+            return redirect()->back()->with('error', 'Stok tidak cukup untuk pembelian langsung.');
+        }
+
+        $cartKey = $id . '_' . $request->variant_id;
+        $cart = session()->get('cart', []);
+
+        // Jika produk belum ada di cart, atau mau override jumlahnya untuk direct checkout
+        if (!isset($cart[$cartKey])) {
+            $cart[$cartKey] = [
+                "product_id" => $id,
+                "variant_id" => $request->variant_id,
+                "name" => $product->name,
+                "variant_name" => ($variant->size ?? 'All Size') . ' - ' . ($variant->material ?? 'Bahan'),
+                "quantity" => $qtyRequested,
+                "price" => $variant->price * 1000,
+                "image" => $product->image
+            ];
+            
+            // Potong stok database
+            $variant->decrement('stock', $qtyRequested);
+            session()->put('cart', $cart);
+        } else {
+            // Jika item sudah ada di cart sebelumnya, kita sesuaikan tambahan kekurangannya
+            $variant->decrement('stock', $qtyRequested);
+            $cart[$cartKey]['quantity'] += $qtyRequested;
+            session()->put('cart', $cart);
+        }
+
+        // Mengarahkan user langsung lompat menuju ke Halaman Checkout
+        return redirect()->route('checkout.index'); // Sesuaikan nama route halaman checkout-mu di sini
+    }
+
+    // 4. MEMPERBARUI QUANTITY DI HALAMAN CART (OPSIONAL - MENYESUAIKAN PERUBAHAN ANGKA)
+    public function update(Request $request)
+    {
+        if ($request->cart_keys && $request->quantities) {
+            $cart = session()->get('cart', []);
+            
+            foreach ($request->cart_keys as $index => $key) {
+                if (isset($cart[$key])) {
+                    $oldQty = $cart[$key]['quantity'];
+                    $newQty = intval($request->quantities[$index]);
+                    
+                    if ($newQty <= 0) {
+                        $this->remove($key);
+                        continue;
+                    }
+
+                    $variant = ProductsVariants::find($cart[$key]['variant_id']);
+                    if ($variant) {
+                        $selisih = $newQty - $oldQty;
+                        
+                        if ($selisih > 0) { // Jika tombol "+" ditekan di halaman cart
+                            if ($variant->stock < $selisih) {
+                                return redirect()->back()->with('error', 'Stok database tidak mencukupi.');
+                            }
+                            $variant->decrement('stock', $selisih);
+                        } elseif ($selisih < 0) { // Jika tombol "-" ditekan di halaman cart
+                            $variant->increment('stock', abs($selisih));
+                        }
+                    }
+
+                    $cart[$key]['quantity'] = $newQty;
+                }
+            }
+            session()->put('cart', $cart);
+            return redirect()->back()->with('success', 'Keranjang berhasil diperbarui!');
+        }
+        return redirect()->back();
     }
 }

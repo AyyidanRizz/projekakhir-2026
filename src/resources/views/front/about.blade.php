@@ -12,10 +12,10 @@
 								<p><a href="" class="btn btn-secondary me-2">Shop Now</a><a href="#" class="btn btn-white-outline">Explore</a></p>
 							</div>
 						</div>
-						<div class="col-lg-7">
+						<!--<div class="col-lg-7">
 							<div class="hero-img-wrap">
 								<img src="{{ asset('front/images/couch.png') }}" class="img-fluid">
-							</div>
+							</div>-->
 						</div>
 					</div>
 				</div>
