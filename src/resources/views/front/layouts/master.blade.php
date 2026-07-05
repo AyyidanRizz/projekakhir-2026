@@ -53,8 +53,37 @@
                     </ul>
 
 					<ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-5">
-						<li><a class="nav-link" href="#"><img src="{{ asset('front/images/user.svg') }}"></a></li>
-                        <li><a class="nav-link" href="{{ url('/cart') }}"><img src="{{ asset('front/images/cart.svg') }}"></a></li>
+						@auth
+							<!-- Jika pelanggan SUDAH login: Tampilkan nama dan dropdown menu logout -->
+							<li class="nav-item dropdown">
+								<a class="nav-link dropdown-toggle text-white" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+									Hi, {{ Auth::user()->name }}
+								</a>
+								<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+									<li>
+										<a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+											Logout
+										</a>
+										<form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+											@csrf
+										</form>
+									</li>
+								</ul>
+							</li>
+						@else
+							<!-- Jika pelanggan BELUM login: Klik icon user langsung diarahkan ke halaman login -->
+							<li>
+								<a class="nav-link" href="{{ route('login') }}">
+									<img src="{{ asset('front/images/user.svg') }}" alt="Login">
+								</a>
+							</li>
+						@endauth
+
+						<li>
+							<a class="nav-link" href="{{ url('/cart') }}">
+								<img src="{{ asset('front/images/cart.svg') }}">
+							</a>
+						</li>
 					</ul>
 				</div>
 			</div>

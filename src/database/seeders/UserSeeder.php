@@ -25,5 +25,11 @@ class UserSeeder extends Seeder
             ['name' => 'User Account', 'password' => Hash::make('password')]
         );
         $user->assignRole('user');
+
+        $customer1 = User::firstOrCreate(
+            ['email' => 'ucupGans@gmail.com'], // Email untuk login
+            ['name' => 'Ucup Sarucup', 'password' => Hash::make('rahasia123')] // Password-nya: rahasia123
+        );
+        $customer1->assignRole('user'); // Tetap berikan role 'user' agar hak aksesnya sama
     }
 }
