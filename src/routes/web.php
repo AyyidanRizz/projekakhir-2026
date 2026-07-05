@@ -19,8 +19,36 @@ Livewire::setScriptRoute(function ($handle) {
 /*
 / END
 */
-Route::get('/', function () {
+/*Route::get('/', function () {
     return view('welcome');
+});*/
+
+Route::get('/', function () {
+    return view('front.index');
+});
+
+Route::get('/', function () {
+    return view('front.index');
+});
+
+Route::get('/shop', function () {
+    return view('front.shop');
+});
+
+Route::get('/about', function () {
+    return view('front.about');
+});
+
+Route::get('/services', function () {
+    return view('front.services');
+});
+
+Route::get('/cart', function () {
+    return view('front.cart');
+});
+
+Route::get('/checkout', function () {
+    return view('front.checkout');
 });
 
 Route::middleware(['auth'])->group(function () {
