@@ -43,8 +43,7 @@ Route::get('/services', function () {
 
 // ==================== KERAJANG (CART) ====================
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add'); // Sesuai request tambahanmu sebelumnya
-Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add.id');
+Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
 Route::post('/cart/buynow/{id}', [CartController::class, 'buyNow'])->name('cart.buynow');
 Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
 Route::get('/cart/remove/{key}', [CartController::class, 'remove'])->name('cart.remove');

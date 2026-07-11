@@ -17,10 +17,14 @@ use Illuminate\Validation\Rules\Enum as EnumRule;
 
 class CheckoutController extends Controller
 {
-    public function index()
-    {
-        // Ambil data cart dari session
-        $cart = session()->get('cart', []);
+    public function index(){
+        // Prioritaskan Direct Checkout.
+        // Jika tidak ada, baru gunakan Cart biasa.
+        $cart = session()->get('direct_checkout');
+
+        if (!$cart) {
+            $cart = session()->get('cart', []);
+        }
 
         // Jika cart kosong dan bukan redirect sukses checkout
         if (empty($cart) && !session()->has('success_checkout')) {
@@ -41,6 +45,7 @@ class CheckoutController extends Controller
             'totalQuantity'
         ))->with('couriers', Courier::cases());
     }
+
     public function store(Request $request)
     {
         // Validasi input
@@ -69,8 +74,16 @@ class CheckoutController extends Controller
             'city'        => $request->city,
             'postal_code' => $request->postal_code,
         ]);
-        // Ambil cart
-        $cart = session()->get('cart', []);
+        // Menentukan sumber checkout
+        $isDirectCheckout = session()->has('direct_checkout');
+
+        // Prioritaskan Direct Checkout.
+        // Jika tidak ada, gunakan Cart biasa.
+        $cart = session()->get('direct_checkout');
+
+        if (!$cart) {
+            $cart = session()->get('cart', []);
+        }
 
         if (empty($cart)) {
             return redirect()
@@ -148,7 +161,16 @@ class CheckoutController extends Controller
             'amount' => $dp,
             'status' => PaymentStatus::PENDING,
         ]);
-        session()->forget('cart');
+        // Menentukan sumber checkout
+        $isDirectCheckout = session()->has('direct_checkout');
+
+        // Prioritaskan Direct Checkout.
+        // Jika tidak ada, gunakan Cart biasa.
+        $cart = session()->get('direct_checkout');
+
+        if (!$cart) {
+            $cart = session()->get('cart', []);
+        }
         
         return redirect()
             ->route('checkout.index')

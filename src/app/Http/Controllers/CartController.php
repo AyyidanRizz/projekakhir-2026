@@ -90,49 +90,33 @@ class CartController extends Controller
     }
 
     // 3. BELI INSTANT (DIRECT CHECKOUT) & POTONG STOK
-    public function buyNow(Request $request, $id)
-    {
+    public function buyNow(Request $request, $id){
         $product = Products::findOrFail($id);
-        
         $request->validate([
             'variant_id' => 'required',
-            'quantity' => 'required|integer|min:1'
+            'quantity'   => 'required|integer|min:1'
         ]);
-
-        $qtyRequested = intval($request->quantity);
-        $variant = $product->variants()->where('id', $request->variant_id)->firstOrFail();
-        
+        $qtyRequested = (int) $request->quantity;
+        $variant = $product->variants()
+            ->where('id', $request->variant_id)
+            ->firstOrFail();
         if ($variant->stock < $qtyRequested) {
-            return redirect()->back()->with('error', 'Stok tidak cukup untuk pembelian langsung.');
+            return redirect()->back()
+                ->with('error', 'Stok tidak cukup untuk pembelian langsung.');
         }
-
-        $cartKey = $id . '_' . $request->variant_id;
-        $cart = session()->get('cart', []);
-
-        // Jika produk belum ada di cart, atau mau override jumlahnya untuk direct checkout
-        if (!isset($cart[$cartKey])) {
-            $cart[$cartKey] = [
-                "product_id" => $id,
-                "variant_id" => $request->variant_id,
-                "name" => $product->name,
-                "variant_name" => ($variant->size ?? 'All Size') . ' - ' . ($variant->material ?? 'Bahan'),
-                "quantity" => $qtyRequested,
-                "price" => $variant->price * 1000,
-                "image" => $product->image
-            ];
-            
-            // Potong stok database
-            $variant->decrement('stock', $qtyRequested);
-            session()->put('cart', $cart);
-        } else {
-            // Jika item sudah ada di cart sebelumnya, kita sesuaikan tambahan kekurangannya
-            $variant->decrement('stock', $qtyRequested);
-            $cart[$cartKey]['quantity'] += $qtyRequested;
-            session()->put('cart', $cart);
-        }
-
-        // Mengarahkan user langsung lompat menuju ke Halaman Checkout
-        return redirect()->route('checkout.index'); // Sesuaikan nama route halaman checkout-mu di sini
+        $directCheckout = [
+            "product_id"   => $id,
+            "variant_id"   => $variant->id,
+            "name"         => $product->name,
+            "variant_name" => ($variant->size ?? 'All Size') . ' - ' . ($variant->material ?? 'Bahan'),
+            "quantity"     => $qtyRequested,
+            "price"        => $variant->price * 1000,
+            "image"        => $product->image,
+        ];
+        session()->put('direct_checkout', [
+            $id . '_' . $variant->id => $directCheckout
+        ]);
+        return redirect()->route('checkout.index');
     }
 
     // 4. MEMPERBARUI QUANTITY DI HALAMAN CART (OPSIONAL - MENYESUAIKAN PERUBAHAN ANGKA)

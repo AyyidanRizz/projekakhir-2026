@@ -1,29 +1,6 @@
 @extends('front.layouts.master')
 
 @section('content')
-        {{-- Menambahkan inline style padding untuk mengontrol tinggi hero section --}}
-        <!--
-            <div class="hero" style="padding: 30px 0 !important;"> 
-                <div class="container">
-                    <div class="row justify-content-between">
-                        <div class="col-lg-5">
-                            <div class="intro-excerpt">
-                                {{-- Mengurangi ukuran font h1 jika dirasa teksnya terlalu besar setelah hero diperkecil --}}
-                                <h1 style="font-size: 2.5rem;">Produk Sablon <span class="d-block">& Bordir</span></h1>
-                                <p class="mb-3">Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate velit imperdiet dolor tempor tristique.</p>
-                                <p class="mb-0">
-                                </p>
-                            </div>
-                        </div>
-                        <div class="col-lg-7">
-                            <div class="hero-img-wrap">
-                                &nbsp;
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        -->
 <div class="untree_co-section">
     <div class="container">
         <div class="row">
