@@ -41,8 +41,9 @@ class ProductsResource extends Resource
                         
                         Forms\Components\TextInput::make('slug')
                             ->required()
-                            ->maxLength(255)
-                            ->unique(ignoreRecord: true),
+                            ->unique(ignoreRecord: true)
+                            ->disabled()
+                            ->dehydrated(),
                         
                         Forms\Components\TextInput::make('base_price')
                             ->label('Harga Dasar')
@@ -52,7 +53,12 @@ class ProductsResource extends Resource
                         
                         Forms\Components\FileUpload::make('image')
                             ->image()
-                            ->directory('products'),
+                            ->directory('products')
+                            ->imageEditor()
+                            ->imageResizeMode('cover')
+                            ->imageCropAspectRatio('1:1')
+                            ->imageResizeTargetWidth('800')
+                            ->imageResizeTargetHeight('800'),
                         
                         Forms\Components\Toggle::make('is_active')
                             ->required()
@@ -124,6 +130,7 @@ class ProductsResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\ImageColumn::make('image')->square(),
                 Tables\Columns\TextColumn::make('name')->searchable(),
                 Tables\Columns\TextColumn::make('category.name')->sortable(),
                 Tables\Columns\TextColumn::make('base_price')->money('IDR'),

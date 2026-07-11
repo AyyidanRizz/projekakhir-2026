@@ -2,12 +2,20 @@
 
 @section('content')
     <!-- Start Hero Section -->
-    <div class="hero">
+{{-- Menambahkan inline style padding untuk mengontrol tinggi hero section --}}
+    <div class="hero" style="padding: 30px 0 !important;"> 
         <div class="container">
             <div class="row justify-content-between">
                 <div class="col-lg-5">
                     <div class="intro-excerpt">
-                        <h1>Cart</h1>
+                        {{-- Mengurangi ukuran font h1 jika dirasa teksnya terlalu besar setelah hero diperkecil --}}
+                        <h1 style="font-size: 2.5rem;">Keranjang</h1>
+                        <p class="mb-3">Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate velit imperdiet dolor tempor tristique.</p>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="hero-img-wrap">
+                        &nbsp;
                     </div>
                 </div>
             </div>

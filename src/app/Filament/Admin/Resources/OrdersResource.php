@@ -106,6 +106,7 @@ public static function form(Form $form): Form
                                     ->searchable()
                                     ->required()
                                     ->reactive()
+                                    ->dehydrated(false)
                                     ->afterStateUpdated(function (Forms\Set $set) {
                                         // Reset varian, harga, dan subtotal jika produk diganti
                                         $set('product_variant_id', null);

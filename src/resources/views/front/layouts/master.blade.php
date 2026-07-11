@@ -23,49 +23,6 @@
 		<link href="{{ asset('front/css/style.css') }}" rel="stylesheet">
 		<title>Furni Free Bootstrap 5 Template for Furniture and Interior Design Websites by Untree.co </title>
 	<!-- Kustom CSS untuk mengecilkan skala tampilan website agar lebih rapi -->
-		<style>
-			html {
-				/* Mengecilkan skala dasar font di seluruh website sebesar 10-15% */
-				font-size: 10px !important; 
-			}
-
-			body {
-				/* Mengurangi ukuran font dasar teks */
-				font-size: 0.95rem !important;
-				background-color: #f8f9fa;
-			}
-
-			/* Merapikan tabel keranjang belanja seperti di gambar image_392524.png */
-			.table th, .table td {
-				padding: 12px 8px !important; /* Memperkecil padding tabel agar tidak terlalu renggang */
-				font-size: 0.9rem !important;
-				vertical-align: middle !important;
-			}
-
-			/* Mengecilkan ukuran tombol-tombol besar agar lebih proporsional */
-			.btn {
-				padding: 8px 16px !important;
-				font-size: 0.85rem !important;
-			}
-
-			/* Khusus untuk tombol besar seperti 'Proceed To Checkout' atau 'Add to Cart' */
-			.btn-lg {
-				padding: 12px 24px !important;
-				font-size: 0.95rem !important;
-			}
-
-			/* Mengecilkan ukuran gambar produk di dalam tabel keranjang */
-			.table img {
-				max-width: 60px !important;
-				height: auto !important;
-			}
-
-			/* Mengatur ukuran kotak input kuantitas di keranjang */
-			.input-group .form-control {
-				font-size: 0.9rem !important;
-				padding: 4px 8px !important;
-			}
-		</style>
 	</head>
 
 	<body>

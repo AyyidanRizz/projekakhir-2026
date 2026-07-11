@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Response;
 /* NOTE: Do Not Remove
 / Livewire asset handling if using sub folder in domain
 */
-
 Livewire::setUpdateRoute(function ($handle) {
     return Route::post(config('app.asset_prefix') . '/livewire/update', $handle);
 });
@@ -23,77 +22,46 @@ Livewire::setScriptRoute(function ($handle) {
 /*
 / END
 */
-/*Route::get('/', function () {
-    return view('welcome');
-});*/
 
-Route::get('/', function () {
-    return view('front.index');
-});
-
-Route::get('/', function () {
-    return view('front.index');
-});
+// 🔥 HALAMAN UTAMA (HOMEPAGE) - SEKARANG SUDAH AKTIF
+Route::get('/', [ProductsController::class, 'home'])->name('home');
 
 // Halaman Shop Utama
-Route::get('/shop', [ProductsController::class, 'index'])
-    ->name('front.shop');
+Route::get('/shop', [ProductsController::class, 'index'])->name('front.shop');
 
-// Halaman Detail Produk (Tambahkan ini)
-Route::get('/shop/{id}', [ProductsController::class, 'show'])
-    ->name('front.shop.detail');
+// Halaman Detail Produk (Menggunakan Route Model Binding)
+Route::get('/shop/{product}', [ProductsController::class, 'show'])->name('front.shop.detail');
 
+// Halaman Statis
 Route::get('/about', function () {
     return view('front.about');
 });
-
 Route::get('/services', function () {
     return view('front.services');
 });
 
-Route::get('/cart', function () {
-    return view('front.cart');
-});
 
-Route::get('/checkout', function () {
-    return view('front.checkout');
-});
-
-// Proteksi Halaman: Hanya User yang sudah Login
-Route::middleware(['auth'])->group(function () {
-    Route::post('/orders', [OrdersController::class, 'store'])->name('orders.store');
-    Route::get('/checkout', function () { 
-        return view('front.checkout'); 
-    })->name('front.checkout'); // <-- SEKARANG SUDAH DIBERI NAMA
-});
-/*
-Route::get('/', function () { return view('front.index'); })->name('home');
-Route::get('/shop', function () { return view('front.shop'); });
-Route::get('/about', function () { return view('front.about'); });
-Route::get('/services', function () { return view('front.services'); });
-Route::get('/cart', function () { return view('front.cart'); });
-*/
-
-// Route Autentikasi (Login & Keluar)
-Route::get('/masuk', [AuthController::class, 'showAuthPage'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-// Tambahkan ini di routes/web.php (di luar atau di dalam middleware auth sesuai kebutuhan webmu)
-Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
-
-// Proteksi Halaman: Hanya User yang sudah Login yang bisa masuk ke sini
-Route::middleware(['auth'])->group(function () {
-    Route::get('/checkout', function () { 
-        return view('front.checkout'); 
-    });
-});
-
+// ==================== KERAJANG (CART) ====================
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add');
+Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add'); // Sesuai request tambahanmu sebelumnya
+Route::post('/cart/add/{id}', [CartController::class, 'add'])->name('cart.add.id');
 Route::post('/cart/buynow/{id}', [CartController::class, 'buyNow'])->name('cart.buynow');
 Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
 Route::get('/cart/remove/{key}', [CartController::class, 'remove'])->name('cart.remove');
 
-Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
-Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
+
+// ==================== AUTENTIKASI ====================
+Route::get('/masuk', [AuthController::class, 'showAuthPage'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+
+// ==================== PROTEKSI (AUTH ONLY) ====================
+Route::middleware(['auth'])->group(function () {
+    Route::post('/orders', [OrdersController::class, 'store'])->name('orders.store');
+    
+    // Checkout diarahkan langsung ke Controller agar dinamis
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
+});

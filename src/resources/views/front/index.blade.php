@@ -1,26 +1,27 @@
 @extends('front.layouts.master')
 
 @section('content')
-        <!-- Start Hero Section -->
-            <div class="hero">
+        {{-- Menambahkan inline style padding untuk mengontrol tinggi hero section --}}
+            <div class="hero" style="padding: 30px 0 !important;"> 
                 <div class="container">
                     <div class="row justify-content-between">
                         <div class="col-lg-5">
                             <div class="intro-excerpt">
-                                <h1>Produk Sablon <span class="d-block">& Bordir</span></h1>
-                                <p class="mb-4">Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate velit imperdiet dolor tempor tristique.</p>
-                                <p><a href="" class="btn btn-secondary me-2">Shop Now</a><a href="#" class="btn btn-white-outline">Explore</a></p>
+                                {{-- Mengurangi ukuran font h1 jika dirasa teksnya terlalu besar setelah hero diperkecil --}}
+                                <h1 style="font-size: 2.5rem;">Produk Sablon <span class="d-block">& Bordir</span></h1>
+                                <p class="mb-3">Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate velit imperdiet dolor tempor tristique.</p>
+                                <p class="mb-0">
+                                </p>
                             </div>
                         </div>
                         <div class="col-lg-7">
-                            <!--<div class="hero-img-wrap">
-                                <img src="{{ asset('front/images/couch.png') }}" class="img-fluid">
-                            </div>-->
+                            <div class="hero-img-wrap">
+                                &nbsp;
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        <!-- End Hero Section -->
 
         <!-- Start Product Section -->
         <div class="product-section">
@@ -31,52 +32,31 @@
                     <div class="col-md-12 col-lg-3 mb-5 mb-lg-0">
                         <h2 class="mb-4 section-title">Crafted with excellent material.</h2>
                         <p class="mb-4">Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate velit imperdiet dolor tempor tristique. </p>
-                        <p><a href="shop.html" class="btn">Explore</a></p>
+                        <p><a href="{{ route('front.shop') }}" class="btn">
+                            Explore
+                        </a></p>
                     </div> 
                     <!-- End Column 1 -->
-
-                    <!-- Start Column 2 -->
+                    @foreach($products as $product)
                     <div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
-                        <a class="product-item" href="cart.html">
-                            <img src="{{ asset('front/images/product-1.png') }}" class="img-fluid product-thumbnail">
-                            <h3 class="product-title">Nordic Chair</h3>
-                            <strong class="product-price">$50.00</strong>
-
-                            <span class="icon-cross">
-                                <img src="{{ asset('front/images/cross.svg') }}" class="img-fluid">
-                            </span>
-                        </a>
-                    </div> 
-                    <!-- End Column 2 -->
-
-                    <!-- Start Column 3 -->
-                    <div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
-                        <a class="product-item" href="cart.html">
-                            <img src="{{ asset('front/images/product-2.png') }}" class="img-fluid product-thumbnail">
-                            <h3 class="product-title">Kruzo Aero Chair</h3>
-                            <strong class="product-price">$78.00</strong>
-
+                        <a class="product-item"
+                        href="{{ route('front.shop.detail', $product->slug) }}">
+                            <img
+                                src="{{ $product->image ? asset('storage/'.$product->image) : asset('front/images/product-1.png') }}"
+                                class="img-fluid product-thumbnail"
+                                alt="{{ $product->name }}">
+                            <h3 class="product-title">
+                                {{ $product->name }}
+                            </h3>
+                            <strong class="product-price">
+                                Rp {{ number_format($product->base_price * 1000,0,',','.') }}
+                            </strong>
                             <span class="icon-cross">
                                 <img src="{{ asset('front/images/cross.svg') }}" class="img-fluid">
                             </span>
                         </a>
                     </div>
-                    <!-- End Column 3 -->
-
-                    <!-- Start Column 4 -->
-                    <div class="col-12 col-md-4 col-lg-3 mb-5 mb-md-0">
-                        <a class="product-item" href="cart.html">
-                            <img src="{{ asset('front/images/product-3.png') }}" class="img-fluid product-thumbnail">
-                            <h3 class="product-title">Ergonomic Chair</h3>
-                            <strong class="product-price">$43.00</strong>
-
-                            <span class="icon-cross">
-                                <img src="{{ asset('front/images/cross.svg') }}" class="img-fluid">
-                            </span>
-                        </a>
-                    </div>
-                    <!-- End Column 4 -->
-
+                    @endforeach
                 </div>
             </div>
         </div>

@@ -119,7 +119,7 @@ a {
         font-size: 54px; } }
   .hero p {
     color: rgba(255, 255, 255, 0.5);
-    margin-botom: 30px; }
+    margin-bottom: 30px; } /* DI SINI: Sudah diperbaiki dari margin-botom */
   .hero .hero-img-wrap {
     position: relative; }
     .hero .hero-img-wrap img {
@@ -316,7 +316,7 @@ a {
   .we-help-section .imgs-grid {
     display: -ms-grid;
     display: grid;
-    -ms-grid-columns: (1fr)[27];
+    -ms-grid-columns: repeat(27, 1fr); /* DI SINI: Sudah diperbaiki agar valid */
     grid-template-columns: repeat(27, 1fr);
     position: relative; }
     .we-help-section .imgs-grid:before {
@@ -709,3 +709,28 @@ textarea {
     height: 50px;
     border-radius: 50%;
     background: rgba(59, 93, 80, 0.2); }
+
+.product-thumbnail {
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+}
+
+.category-checkbox{
+    position: static;
+    margin-top: 0;
+    margin-left: 0;
+    width:16px;
+    height:16px;
+    cursor:pointer;
+}
+
+.form-check{
+    padding-left:0;
+}
+
+.input-group .btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
