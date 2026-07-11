@@ -9,7 +9,7 @@
                             <div class="intro-excerpt">
                                 {{-- Mengurangi ukuran font h1 jika dirasa teksnya terlalu besar setelah hero diperkecil --}}
                                 <h1 style="font-size: 2.5rem;">Produk Sablon & Bordir</span></h1>
-                                <p class="mb-3">Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate velit imperdiet dolor tempor tristique.</p>
+                                <p class="mb-3">Wujudkan Produk Custom Impianmu dengan Proses yang Transparan dan Sesuai Syariah</p>
                                 <p class="mb-0">
                                 </p>
                             </div>
@@ -30,8 +30,9 @@
 
                     <!-- Start Column 1 -->
                     <div class="col-md-12 col-lg-3 mb-5 mb-lg-0">
-                        <h2 class="mb-4 section-title">Crafted with excellent material.</h2>
-                        <p class="mb-4">Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate velit imperdiet dolor tempor tristique. </p>
+                        <h2 class="mb-4 section-title">Wujudkan Produk Impianmu.</h2>
+                        <p class="mb-4">Pesan berbagai produk custom dengan mudah. Mulai dari upload desain hingga produksi,
+                        semua diproses secara transparan dan sesuai prinsip syariah.</p>
                         <p><a href="{{ route('front.shop') }}" class="btn">
                             Explore
                         </a></p>
@@ -74,14 +75,15 @@
                         </div>
                     </div>
                     <div class="col-lg-5 ps-lg-5">
-                        <h2 class="section-title mb-4">We Help You Make Modern Interior Design</h2>
-                        <p>Donec facilisis quam ut purus rutrum lobortis. Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate velit imperdiet dolor tempor tristique. Pellentesque habitant morbi tristique senectus et netus et malesuada</p>
+                        <h2 class="section-title mb-4">We Help You To Make Your Own Design</h2>
+                        <p>Kami melayani sablon dan bordir custom untuk kebutuhan organisasi hingga pribadi. 
+                        Tak hanya mudah, kami memastikan setiap pesanan Anda diproses dengan prinsip kebaikan:</p>
 
                         <ul class="list-unstyled custom-list my-4">
-                            <li>Donec vitae odio quis nisl dapibus malesuada</li>
-                            <li>Donec vitae odio quis nisl dapibus malesuada</li>
-                            <li>Donec vitae odio quis nisl dapibus malesuada</li>
-                            <li>Donec vitae odio quis nisl dapibus malesuada</li>
+                            <li>Transaksi dengan aturan syariah yang jelasan diawal</li>
+                            <li>Produk berkualitas dengan menggunakan bahan pilihan</li>
+                            <li>Custom sesuai ide desain dan spesifikasi kesukaanmu</li>
+                            <li>Setiap tahapan produksi akan diinfokan secara transparan</li>
                         </ul>
                         <p><a href="{{ route('front.shop') }}" class="btn">
                             Explore
@@ -96,6 +98,9 @@
         <div class="popular-product">
             <div class="container">
                 <div class="row">
+                    <div class="col-lg-12 mx-auto text-center">
+                        <h2 class="section-title">Produk Pilihan</h2>
+                    </div>
 
                     <div class="col-12 col-md-6 col-lg-4 mb-4 mb-lg-0">
                         <div class="product-item-sm d-flex">
@@ -104,8 +109,7 @@
                             </div>
                             <div class="pt-3">
                                 <h3>Kaos Crew Neck</h3>
-                                <p>Donec facilisis quam ut purus rutrum lobortis. Donec vitae odio </p>
-                                <p><a href="#">Read More</a></p>
+                                <p>Kenyamanan maksimal dengan sentuhan desain minimalis yang bermakna.</p>
                             </div>
                         </div>
                     </div>
@@ -117,8 +121,7 @@
                             </div>
                             <div class="pt-3">
                                 <h3>Hoodie</h3>
-                                <p>Donec facilisis quam ut purus rutrum lobortis. Donec vitae odio </p>
-                                <p><a href="#">Read More</a></p>
+                                <p>Sahabat terbaik untuk cuaca dingin, dirancang dengan bahan premium yang super lembut.</p>
                             </div>
                         </div>
                     </div>
@@ -130,8 +133,7 @@
                             </div>
                             <div class="pt-3">
                                 <h3>Topi</h3>
-                                <p>Donec facilisis quam ut purus rutrum lobortis. Donec vitae odio </p>
-                                <p><a href="#">Read More</a></p>
+                                <p>Sentuhan akhir yang sempurna untuk melindungi harimu.</p>
                             </div>
                         </div>
                     </div>
@@ -145,7 +147,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-lg-7 mx-auto text-center">
-                        <h2 class="section-title">Testimonials</h2>
+                        <h2 class="section-title">Testimoni</h2>
                     </div>
                 </div>
 
@@ -166,15 +168,15 @@
 
                                             <div class="testimonial-block text-center">
                                                 <blockquote class="mb-5">
-                                                    <p>&ldquo;Donec facilisis quam ut purus rutrum lobortis. Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate velit imperdiet dolor tempor tristique. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Integer convallis volutpat dui quis scelerisque.&rdquo;</p>
+                                                    <p>&ldquo;Proses pemesanan sangat mudah dan jelas. Saya bisa mengirim desain sendiri, memilih ukuran, hingga mengetahui status pesanan tanpa harus datang langsung. Hasil sablonnya juga sesuai dengan desain yang diberikan.&rdquo;</p>
                                                 </blockquote>
 
                                                 <div class="author-info">
                                                     <div class="author-pic">
                                                         <img src="{{ asset('front/images/person-1.png') }}" alt="Maria Jones" class="img-fluid">
                                                     </div>
-                                                    <h3 class="font-weight-bold">Maria Jones</h3>
-                                                    <span class="position d-block mb-3">CEO, Co-Founder, XYZ Inc.</span>
+                                                    <h3 class="font-weight-bold">Ahmad Fauzan</h3>
+                                                    <span class="position d-block mb-3">Ketua Organisasi Kampus</span>
                                                 </div>
                                             </div>
 
@@ -189,15 +191,15 @@
 
                                             <div class="testimonial-block text-center">
                                                 <blockquote class="mb-5">
-                                                    <p>&ldquo;Donec facilisis quam ut purus rutrum lobortis. Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate velit imperdiet dolor tempor tristique. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Integer convallis volutpat dui quis scelerisque.&rdquo;</p>
+                                                    <p>&ldquo;Saya sangat terbantu dengan adanya sistem ini. Pemilihan akad dan rincian pembayaran dijelaskan dengan transparan, sehingga proses pemesanan dalam jumlah banyak terasa lebih aman dan nyaman.&rdquo;</p>
                                                 </blockquote>
 
                                                 <div class="author-info">
                                                     <div class="author-pic">
                                                         <img src="{{ asset('front/images/person-1.png') }}" alt="Maria Jones" class="img-fluid">
                                                     </div>
-                                                    <h3 class="font-weight-bold">Maria Jones</h3>
-                                                    <span class="position d-block mb-3">CEO, Co-Founder, XYZ Inc.</span>
+                                                    <h3 class="font-weight-bold">Rani Maharani</h3>
+                                                    <span class="position d-block mb-3">Pemilik Usaha</span>
                                                 </div>
                                             </div>
 
@@ -212,15 +214,15 @@
 
                                             <div class="testimonial-block text-center">
                                                 <blockquote class="mb-5">
-                                                    <p>&ldquo;Donec facilisis quam ut purus rutrum lobortis. Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate velit imperdiet dolor tempor tristique. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Integer convallis volutpat dui quis scelerisque.&rdquo;</p>
+                                                    <p>&ldquo;Produk yang saya pesan memiliki kualitas yang bagus dan hasil bordirnya rapi. Komunikasi selama proses produksi juga mudah karena setiap tahap pesanan dapat dipantau.&rdquo;</p>
                                                 </blockquote>
 
                                                 <div class="author-info">
                                                     <div class="author-pic">
                                                         <img src="{{ asset('front/images/person-1.png') }}" alt="Maria Jones" class="img-fluid">
                                                     </div>
-                                                    <h3 class="font-weight-bold">Maria Jones</h3>
-                                                    <span class="position d-block mb-3">CEO, Co-Founder, XYZ Inc.</span>
+                                                    <h3 class="font-weight-bold">Dimas Pratame</h3>
+                                                    <span class="position d-block mb-3">Anggota Komunitas</span>
                                                 </div>
                                             </div>
 
