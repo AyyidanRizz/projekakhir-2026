@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Courier;
 use App\Models\Orders;
 use App\Models\OrdersItems;
 use App\Models\Payments;
@@ -12,6 +13,7 @@ use App\Enums\Akad;
 use App\Enums\OrderStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rules\Enum as EnumRule;
 
 class CheckoutController extends Controller
 {
@@ -37,7 +39,7 @@ class CheckoutController extends Controller
             'cart',
             'totalBelanja',
             'totalQuantity'
-        ));
+        ))->with('couriers', Courier::cases());
     }
     public function store(Request $request)
     {
@@ -48,6 +50,10 @@ class CheckoutController extends Controller
             'province' => 'required|string|max:100',
             'city' => 'required|string|max:100',
             'postal_code' => 'required|string|max:20',
+            'courier' => [
+                'required',
+                new EnumRule(Courier::class),
+            ],
             'akad' => 'nullable|string',
             'payment_method' => 'required|in:virtual_account,qris',
         ]);
@@ -98,15 +104,16 @@ class CheckoutController extends Controller
             'total_price' => $totalBelanja,
             'status'      => OrderStatus::MENUNGGU_VALIDASI_DESAIN,
             'akad'        => $akad,
-            'shipping_address' => json_encode([
-                'nama'           => $user->name,
-                'email'          => $user->email,
-                'telepon'        => $request->phone,
-                'alamat_lengkap' => $request->address,
-                'provinsi'       => $request->province,
-                'kota'           => $request->city,
-                'kodepos'        => $request->postal_code,
-            ]),
+                'shipping_address' => json_encode([
+                    'nama'           => $user->name,
+                    'email'          => $user->email,
+                    'telepon'        => $request->phone,
+                    'alamat_lengkap' => $request->address,
+                    'provinsi'       => $request->province,
+                    'kota'           => $request->city,
+                    'kodepos'        => $request->postal_code,
+                    'kurir'          => $request->courier,
+                ]),
             'note' => $request->note,
             'order_date'    => now(),
             'dp_amount'     => $dp,

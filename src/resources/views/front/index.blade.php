@@ -83,7 +83,9 @@
                             <li>Donec vitae odio quis nisl dapibus malesuada</li>
                             <li>Donec vitae odio quis nisl dapibus malesuada</li>
                         </ul>
-                        <p><a href="#" class="btn">Explore</a></p>
+                        <p><a href="{{ route('front.shop') }}" class="btn">
+                            Explore
+                        </a></p>
                     </div>
                 </div>
             </div>

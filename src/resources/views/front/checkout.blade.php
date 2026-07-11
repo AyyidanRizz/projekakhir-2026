@@ -131,6 +131,24 @@
                         </div>
                         <div class="mt-3">
                             <label class="form-label">
+                                Ekspedisi
+                            </label>
+                            <select 
+                                name="courier"
+                                class="form-control"
+                                required>
+                                <option value="">
+                                    Pilih Ekspedisi
+                                </option>
+                                @foreach($couriers as $courier)
+                                    <option value="{{ $courier->value }}">
+                                        {{ $courier->getLabel() }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mt-3">
+                            <label class="form-label">
                                 Catatan Pesanan
                             </label>
                             <textarea
@@ -216,38 +234,37 @@
                               </tr>
                             @endif
                               {{-- Menampilkan Subtotal --}}
-                              <tr>
-                                <td class="text-black font-weight-bold"><strong>Cart Subtotal</strong></td>
-                                <td class="text-black">Rp {{ number_format($totalBelanja, 0, ',', '.') }}</td>
-                              </tr>
+                                <tr>
+                                    <td class="text-black font-weight-bold"><strong>Cart Subtotal</strong></td>
+                                    <td class="text-black">Rp {{ number_format($totalBelanja, 0, ',', '.') }}</td>
+                                </tr>
                               {{-- Menampilkan Total Akhir --}}
-                              <tr>
-                                <td class="text-black font-weight-bold"><strong>Order Total</strong></td>
-                                <td class="text-black font-weight-bold"><strong>Rp {{ number_format($totalBelanja, 0, ',', '.') }}</strong></td>
-                              </tr>
-                              <tbody id="paymentDetail">
-                              <tr>
-                                  <td>
-                                      <strong>DP</strong>
-                                  </td>
-                                  <td>
-                                      Rp <span id="dpAmount">
-                                          {{ number_format($totalBelanja * 0.5,0,',','.') }}
-                                      </span>
-                                  </td>
-                              </tr>
-                              <tr>
-                                  <td>
-                                      <strong>Pelunasan</strong>
-                                  </td>
-                                  <td>
-                                      Rp <span id="remainingAmount">
-                                          {{ number_format($totalBelanja * 0.5,0,',','.') }}
-                                      </span>
-                                  </td>
-                              </tr>
-                              </tbody>
-                            </tbody>
+                                @if($totalQuantity >= 12)
+                                <tbody id="paymentDetail">
+                                <tr>
+                                    <td>
+                                        <strong>DP</strong>
+                                    </td>
+                                    <td>
+                                        Rp 
+                                        <span id="dpAmount">
+                                            {{ number_format($totalBelanja * 0.5,0,',','.') }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <strong>Pelunasan</strong>
+                                    </td>
+                                    <td>
+                                        Rp 
+                                        <span id="remainingAmount">
+                                            {{ number_format($totalBelanja * 0.5,0,',','.') }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                                @endif
                           </table>
                         <h5 class="mb-3">
                             Metode Pembayaran
@@ -347,11 +364,15 @@ document.addEventListener('DOMContentLoaded', function(){
         if(!selected) return;
         if(selected.value === 'istishna'){
             let dpValue = total * 0.5;
-            paymentDetail.style.display = "table-row-group";
+            if(paymentDetail){
+                paymentDetail.style.display = "table-row-group";
+            }
             dp.innerHTML = dpValue.toLocaleString('id-ID');
             remaining.innerHTML = dpValue.toLocaleString('id-ID');
         }else{
-            paymentDetail.style.display = "none";
+            if(paymentDetail){
+                paymentDetail.style.display = "none";
+            }
         }
     }
     akadRadio.forEach(function(radio){
