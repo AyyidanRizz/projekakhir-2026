@@ -10,6 +10,9 @@ class CartController extends Controller
 {
     public function index()
     {
+        session()->forget('checkout_type');
+        session()->forget('direct_checkout');
+
         $cart = session()->get('cart', []);
         $subtotal = 0;
         foreach ($cart as $item) {
@@ -58,10 +61,16 @@ class CartController extends Controller
         }
 
         // AKSI POTONG STOK: Kurangi sebanyak quantity yang diinput pembeli
+        // Di dalam fungsi add(), ubah bagian bawahnya menjadi seperti ini:
         $variant->decrement('stock', $qtyRequested);
 
         session()->put('cart', $cart);
-        return redirect()->back()->with('success', 'Produk berhasil dimasukkan ke keranjang!');
+
+        // HAPUS KEDUA SESSION INI SECARA BERSAMAAN:
+        session()->forget('checkout_type');
+        session()->forget('direct_checkout'); 
+
+        return redirect()->route('cart.index')->with('success', 'Produk berhasil dimasukkan ke keranjang!');
     }
 
     // 2. HAPUS DARI KERANJANG & KEMBALIKAN STOK KE DATABASE
@@ -116,6 +125,8 @@ class CartController extends Controller
         session()->put('direct_checkout', [
             $id . '_' . $variant->id => $directCheckout
         ]);
+
+        session()->put('checkout_type', 'direct');
         return redirect()->route('checkout.index');
     }
 
@@ -153,6 +164,7 @@ class CartController extends Controller
                 }
             }
             session()->put('cart', $cart);
+            session()->put('checkout_type', 'cart');
             return redirect()->back()->with('success', 'Keranjang berhasil diperbarui!');
         }
         return redirect()->back();

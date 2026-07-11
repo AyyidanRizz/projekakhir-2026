@@ -18,11 +18,10 @@ use Illuminate\Validation\Rules\Enum as EnumRule;
 class CheckoutController extends Controller
 {
     public function index(){
-        // Prioritaskan Direct Checkout.
-        // Jika tidak ada, baru gunakan Cart biasa.
-        $cart = session()->get('direct_checkout');
-
-        if (!$cart) {
+    $checkoutType = session()->get('checkout_type');
+        if ($checkoutType === 'direct') {
+            $cart = session()->get('direct_checkout', []);
+        } else {
             $cart = session()->get('cart', []);
         }
 
@@ -163,12 +162,10 @@ class CheckoutController extends Controller
         ]);
         // Menentukan sumber checkout
         $isDirectCheckout = session()->has('direct_checkout');
-
-        // Prioritaskan Direct Checkout.
-        // Jika tidak ada, gunakan Cart biasa.
-        $cart = session()->get('direct_checkout');
-
-        if (!$cart) {
+        $checkoutType = session()->get('checkout_type');
+        if ($checkoutType === 'direct') {
+            $cart = session()->get('direct_checkout', []);
+        } else {
             $cart = session()->get('cart', []);
         }
         

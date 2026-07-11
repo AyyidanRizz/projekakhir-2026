@@ -153,8 +153,26 @@
             @endif
         </div>
     </div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Ambil elemen form update keranjang
+        const cartForm = document.querySelector('form[action="{{ route('cart.update') }}"]');
 
-    <!-- Script Tombol Kuantitas Interaktif -->
+        if (cartForm) {
+            // Deteksi klik pada tombol + (increase) dan - (decrease) bawaan template
+            document.querySelectorAll('.increase, .decrease').forEach(button => {
+                button.addEventListener('click', function () {
+                    // Beri sedikit delay (100ms) agar script bawaan template 
+                    // selesai mengubah angka di input terlebih dahulu
+                    setTimeout(() => {
+                        cartForm.submit();
+                    }, 100);
+                });
+            });
+        }
+    });
+</script>
+    <!-- Script Tombol Kuantitas Interaktif
     <script>
         document.querySelectorAll('.increase').forEach(button => {
             button.addEventListener('click', function() {
@@ -172,4 +190,5 @@
             });
         });
     </script>
+    -->
 @endsection
