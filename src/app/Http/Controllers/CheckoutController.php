@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Akad;
-use App\Enums\OrderStatus;
 use App\Models\Orders;
 use App\Models\OrdersItems;
+use App\Models\Payments;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentType;
+use App\Enums\PaymentStatus;
+use App\Enums\Akad;
+use App\Enums\OrderStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -45,7 +49,7 @@ class CheckoutController extends Controller
             'city' => 'required|string|max:100',
             'postal_code' => 'required|string|max:20',
             'akad' => 'nullable|string',
-            'payment_method' => 'required|string',
+            'payment_method' => 'required|in:virtual_account,qris',
         ]);
 
         /** @var \App\Models\User $user */
@@ -123,6 +127,20 @@ class CheckoutController extends Controller
             ]);
 
         }
+
+        Payments::create([
+
+            'order_id' => $order->id,
+
+            'type' => $akad === Akad::ISTISHNA
+                ? PaymentType::DP
+                : PaymentType::FULL,
+            'payment_method' => PaymentMethod::from(
+                $request->payment_method
+            ),
+            'amount' => $dp,
+            'status' => PaymentStatus::PENDING,
+        ]);
         session()->forget('cart');
         
         return redirect()

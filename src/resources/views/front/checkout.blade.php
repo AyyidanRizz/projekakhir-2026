@@ -249,46 +249,76 @@
                               </tbody>
                             </tbody>
                           </table>
-
-                          <div class="border p-3 mb-3">
-                            <h3 class="h6 mb-0">
-                              <input type="radio" name="payment_method" value="bank" id="payment_bank" checked class="me-2">
-                              <a class="d-inline-block" data-bs-toggle="collapse" href="#collapsebank" role="button" aria-expanded="false" aria-controls="collapsebank">Direct Bank Transfer</a>
-                            </h3>
-                            <div class="collapse" id="collapsebank">
-                              <div class="py-2">
-                                <p class="mb-0">Make your payment directly into our bank account. Please use your Order ID as the payment reference. Your order won’t be shipped until the funds have cleared in our account.</p>
-                              </div>
+                        <h5 class="mb-3">
+                            Metode Pembayaran
+                        </h5>
+                        <div class="border p-3 mb-3">
+                            <div class="form-check mb-3">
+                                <input 
+                                    class="form-check-input payment-radio"
+                                    type="radio"
+                                    name="payment_method"
+                                    value="virtual_account"
+                                    id="virtualAccount"
+                                    checked>
+                                <label 
+                                    class="form-check-label"
+                                    for="virtualAccount">
+                                    Virtual Account
+                                </label>
                             </div>
-                          </div>
-
-                          <div class="border p-3 mb-3">
-                            <h3 class="h6 mb-0">
-                              <input type="radio" name="payment_method" value="cheque" id="payment_cheque" class="me-2">
-                              <a class="d-inline-block" data-bs-toggle="collapse" href="#collapsecheque" role="button" aria-expanded="false" aria-controls="collapsecheque">Cheque Payment</a>
-                            </h3>
-                            <div class="collapse" id="collapsecheque">
-                              <div class="py-2">
-                                <p class="mb-0">Please send a physical cheque to our store address to complete your payment.</p>
-                              </div>
+                            <div 
+                                id="vaDetail"
+                                class="mt-3">
+                                <p class="mb-1">
+                                    Nomor Virtual Account:
+                                </p>
+                                <div class="input-group">
+                                    <input 
+                                        type="text"
+                                        class="form-control"
+                                        id="vaNumber"
+                                        value="88081234567890"
+                                        readonly>
+                                    <button 
+                                        type="button"
+                                        class="btn btn-dark"
+                                        onclick="copyVA()">
+                                        Copy
+                                    </button>
+                                </div>
                             </div>
-                          </div>
-
-                          <div class="border p-3 mb-5">
-                            <h3 class="h6 mb-0">
-                              <input type="radio" name="payment_method" value="paypal" id="payment_paypal" class="me-2">
-                              <a class="d-inline-block" data-bs-toggle="collapse" href="#collapsepaypal" role="button" aria-expanded="false" aria-controls="collapsepaypal">Paypal</a>
-                            </h3>
-                            <div class="collapse" id="collapsepaypal">
-                              <div class="py-2">
-                                <p class="mb-0">You will be redirected to PayPal website to finish the transaction securely.</p>
-                              </div>
+                        </div>
+                        <div class="border p-3 mb-5">
+                            <div class="form-check">
+                                <input 
+                                    class="form-check-input payment-radio"
+                                    type="radio"
+                                    name="payment_method"
+                                    value="qris"
+                                    id="qris">
+                                <label 
+                                    class="form-check-label"
+                                    for="qris">
+                                    QRIS
+                                </label>
                             </div>
-                          </div>
-
-                          <div class="form-group">
+                            <div 
+                                id="qrisDetail"
+                                class="text-center mt-3"
+                                style="display:none">
+                                <p>
+                                    Scan QR Code untuk pembayaran
+                                </p>
+                                <img 
+                                    src="{{ asset('front/images/foto/photo-profile.jpeg') }}"
+                                    width="200"
+                                    alt="QRIS">
+                            </div>
+                        </div>
+                        <div class="form-group">
                             <button class="btn btn-black btn-lg py-3 btn-block" type="submit">Place Order</button>
-                          </div>
+                        </div>
 
                         </div>
                       </div>
@@ -328,6 +358,26 @@ document.addEventListener('DOMContentLoaded', function(){
         radio.addEventListener('change', updateAkad);
     });
     updateAkad();
+    const paymentRadio = document.querySelectorAll('.payment-radio');
+    const vaDetail = document.getElementById('vaDetail');
+    const qrisDetail = document.getElementById('qrisDetail');
+    paymentRadio.forEach(function(payment){
+        payment.addEventListener('change', function(){
+            if(this.value === 'virtual_account'){
+                vaDetail.style.display = "block";
+                qrisDetail.style.display = "none";
+            }
+            if(this.value === 'qris'){
+                vaDetail.style.display = "none";
+                qrisDetail.style.display = "block";
+            }
+        });
+    });
 });
+function copyVA(){
+    let va = document.getElementById('vaNumber');
+    navigator.clipboard.writeText(va.value);
+    alert("Nomor Virtual Account berhasil disalin");
+}
 </script>
 @endsection
