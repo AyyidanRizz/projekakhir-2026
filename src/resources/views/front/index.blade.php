@@ -8,7 +8,7 @@
                         <div class="col-lg-5">
                             <div class="intro-excerpt">
                                 {{-- Mengurangi ukuran font h1 jika dirasa teksnya terlalu besar setelah hero diperkecil --}}
-                                <h1 style="font-size: 2.5rem;">Produk Sablon <span class="d-block">& Bordir</span></h1>
+                                <h1 style="font-size: 2.5rem;">Produk Sablon & Bordir</span></h1>
                                 <p class="mb-3">Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate velit imperdiet dolor tempor tristique.</p>
                                 <p class="mb-0">
                                 </p>
