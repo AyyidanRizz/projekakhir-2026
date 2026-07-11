@@ -68,9 +68,9 @@
                 <div class="row justify-content-between">
                     <div class="col-lg-7 mb-5 mb-lg-0">
                         <div class="imgs-grid">
-                            <div class="grid grid-1"><img src="{{ asset('front/images/img-grid-1.jpg') }}" alt="Untree.co"></div>
-                            <div class="grid grid-2"><img src="{{ asset('front/images/img-grid-2.jpg') }}" alt="Untree.co"></div>
-                            <div class="grid grid-3"><img src="{{ asset('front/images/img-grid-3.jpg') }}" alt="Untree.co"></div>
+                            <div class="grid grid-1"><img src="{{ asset('front/images/foto/sablon1-orang(1).jpg') }}" alt="Untree.co"></div>
+                            <div class="grid grid-2"><img src="{{ asset('front/images/foto/bordir9-alat(1).jpg') }}" alt="Untree.co"></div>
+                            <div class="grid grid-3"><img src="{{ asset('front/images/foto/bordir5-baju(1).jpg') }}" alt="Untree.co"></div>
                         </div>
                     </div>
                     <div class="col-lg-5 ps-lg-5">
@@ -98,10 +98,10 @@
                     <div class="col-12 col-md-6 col-lg-4 mb-4 mb-lg-0">
                         <div class="product-item-sm d-flex">
                             <div class="thumbnail">
-                                <img src="{{ asset('front/images/product-1.png') }}" alt="Image" class="img-fluid">
+                                <img src="{{ asset('front/images/foto/produk3-baju.png') }}" alt="Image" class="img-fluid">
                             </div>
                             <div class="pt-3">
-                                <h3>Nordic Chair</h3>
+                                <h3>Kaos Crew Neck</h3>
                                 <p>Donec facilisis quam ut purus rutrum lobortis. Donec vitae odio </p>
                                 <p><a href="#">Read More</a></p>
                             </div>
@@ -111,10 +111,10 @@
                     <div class="col-12 col-md-6 col-lg-4 mb-4 mb-lg-0">
                         <div class="product-item-sm d-flex">
                             <div class="thumbnail">
-                                <img src="{{ asset('front/images/product-2.png') }}" alt="Image" class="img-fluid">
+                                <img src="{{ asset('front/images/foto/produk2-hoodie.png') }}" alt="Image" class="img-fluid">
                             </div>
                             <div class="pt-3">
-                                <h3>Kruzo Aero Chair</h3>
+                                <h3>Hoodie</h3>
                                 <p>Donec facilisis quam ut purus rutrum lobortis. Donec vitae odio </p>
                                 <p><a href="#">Read More</a></p>
                             </div>
@@ -124,16 +124,15 @@
                     <div class="col-12 col-md-6 col-lg-4 mb-4 mb-lg-0">
                         <div class="product-item-sm d-flex">
                             <div class="thumbnail">
-                                <img src="{{ asset('front/images/product-3.png') }}" alt="Image" class="img-fluid">
+                                <img src="{{ asset('front/images/foto/produk1-topi.png') }}" alt="Image" class="img-fluid">
                             </div>
                             <div class="pt-3">
-                                <h3>Ergonomic Chair</h3>
+                                <h3>Topi</h3>
                                 <p>Donec facilisis quam ut purus rutrum lobortis. Donec vitae odio </p>
                                 <p><a href="#">Read More</a></p>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
