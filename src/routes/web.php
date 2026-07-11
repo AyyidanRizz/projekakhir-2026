@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\AuthController;
@@ -22,7 +23,15 @@ Livewire::setScriptRoute(function ($handle) {
 /*
 / END
 */
+Route::middleware('auth')->group(function () {
 
+    Route::get('/profile', [ProfileController::class, 'index'])
+        ->name('profile.index');
+
+    Route::put('/profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
+
+});
 // 🔥 HALAMAN UTAMA (HOMEPAGE) - SEKARANG SUDAH AKTIF
 Route::get('/', [ProductsController::class, 'home'])->name('home');
 

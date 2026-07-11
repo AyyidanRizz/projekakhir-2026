@@ -24,8 +24,6 @@
 			</div>
 		<!-- End Hero Section -->
 
-		
-
 		<!-- Start Why Choose Us Section -->
 		<div class="why-choose-section">
 			<div class="container">

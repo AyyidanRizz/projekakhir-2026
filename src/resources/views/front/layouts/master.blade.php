@@ -56,21 +56,39 @@
 					<ul class="custom-navbar-cta navbar-nav mb-2 mb-md-0 ms-5">
 						@auth
 							<!-- Jika pelanggan SUDAH login: Tampilkan nama dan dropdown menu logout -->
-							<li class="nav-item dropdown">
-								<a class="nav-link dropdown-toggle text-white" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-									Hi, {{ Auth::user()->name }}
-								</a>
-								<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-									<li>
-										<a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-											Logout
-										</a>
-										<form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-											@csrf
-										</form>
-									</li>
-								</ul>
-							</li>
+						<li class="nav-item dropdown">
+							<a class="nav-link dropdown-toggle text-white d-inline-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+								Hi, {{ Auth::user()->name }}
+								<!-- Posisi gambar dipindah ke bawah nama dengan margin kiri (ms-2) -->
+								<img
+									src="{{ Auth::user()->getFilamentAvatarUrl() }}"
+									width="35"
+									height="35"
+									class="rounded-circle ms-2"
+									style="object-fit:cover;">
+							</a>
+							<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+								<!-- Menu Profile -->
+								<li>
+									<a class="dropdown-item" href="{{ route('profile.index') }}">
+										Profile
+									</a>
+								</li>
+								<!-- Garis Pembatas (Divider) -->
+								<li>
+									<hr class="dropdown-divider">
+								</li>
+								<!-- Menu Logout -->
+								<li>
+									<a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+										Logout
+									</a>
+									<form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+										@csrf
+									</form>
+								</li>
+							</ul>
+						</li>
 						@else
 							<!-- Jika pelanggan BELUM login: Klik icon user langsung diarahkan ke halaman login -->
 							<li>
