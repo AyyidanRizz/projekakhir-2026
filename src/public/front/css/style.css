@@ -734,3 +734,25 @@ textarea {
     align-items:center;
     justify-content:center;
 }
+
+.akad-box {
+    display: inline-block;
+    width: 150px;
+    padding: 12px 20px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: 0.2s;
+}
+
+
+.akad-radio:checked + .akad-box {
+    border-color: black;
+    background-color: #f1f1f1;
+    font-weight: bold;
+}
+
+.akad-box:hover {
+    border-color: black;
+}

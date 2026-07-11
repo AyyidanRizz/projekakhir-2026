@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Akad;
 use App\Enums\OrderStatus;
-use App\Models\Orders; 
-use App\Models\OrdersItems; 
+use App\Models\Orders;
+use App\Models\OrdersItems;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -12,89 +13,123 @@ class CheckoutController extends Controller
 {
     public function index()
     {
-        // 1. Ambil data cart dari session.
+        // Ambil data cart dari session
         $cart = session()->get('cart', []);
 
-        // 2. MODIFIKASI: Jika keranjang kosong, TAPI ada session sukses checkout, jangan di-kick ke cart.
+        // Jika cart kosong dan bukan redirect sukses checkout
         if (empty($cart) && !session()->has('success_checkout')) {
-            return redirect()->route('cart.index')->with('error', 'Keranjang belanja Anda masih kosong!');
+            return redirect()
+                ->route('cart.index')
+                ->with('error', 'Keranjang belanja Anda masih kosong!');
         }
-
-        // 3. Hitung total belanja secara dinamis
+        // Hitung total belanja dan jumlah barang
         $totalBelanja = 0;
+        $totalQuantity = 0;
         foreach ($cart as $item) {
             $totalBelanja += $item['price'] * $item['quantity'];
+            $totalQuantity += $item['quantity'];
         }
-
-        // 4. Kirim data cart dan totalBelanja ke file view blade
-        return view('front.checkout', compact('cart', 'totalBelanja'));
+        return view('front.checkout', compact(
+            'cart',
+            'totalBelanja',
+            'totalQuantity'
+        ));
     }
-
     public function store(Request $request)
     {
-        // 1. Validasi data yang masuk terlebih dahulu
+        // Validasi input
         $request->validate([
-            'c_fname' => 'required|string|max:255',
-            'c_lname' => 'required|string|max:255',
-            'c_address' => 'required|string',
-            'c_email_address' => 'required|email',
-            'c_phone' => 'required|string',
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string',
+            'province' => 'required|string|max:100',
+            'city' => 'required|string|max:100',
+            'postal_code' => 'required|string|max:20',
+            'akad' => 'nullable|string',
             'payment_method' => 'required|string',
         ]);
 
-        // 2. Ambil data keranjang dari session
-        $cart = session()->get('cart', []);
-        if (empty($cart)) {
-            return redirect()->back()->with('error', 'Keranjang belanja Anda kosong!');
-        }
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
 
-        // 3. Hitung total belanjaan kembali demi keamanan
+        // Update data user
+        $user->update([
+            'phone'       => $request->phone,
+            'address'     => $request->address,
+            'province'    => $request->province,
+            'city'        => $request->city,
+            'postal_code' => $request->postal_code,
+        ]);
+        // Ambil cart
+        $cart = session()->get('cart', []);
+
+        if (empty($cart)) {
+            return redirect()
+                ->back()
+                ->with('error', 'Keranjang belanja Anda kosong!');
+        }
+        // Hitung total
         $totalBelanja = 0;
+        $totalQuantity = 0;
         foreach ($cart as $item) {
             $totalBelanja += $item['price'] * $item['quantity'];
+            $totalQuantity += $item['quantity'];
         }
 
-        // 4. Simpan data ke tabel Orders
+        if ($totalQuantity < 12) {
+            $akad = Akad::SALAM;
+        } else {
+            $akad = Akad::from($request->akad);
+        }
+        
+        if ($akad === Akad::ISTISHNA) {
+            $dp = $totalBelanja * 0.5;
+
+        } else {
+            $dp = $totalBelanja;
+
+        }
+
         $order = Orders::create([
-            'user_id'          => Auth::id(), 
-            'total_price'      => $totalBelanja,
-            'status'           => \App\Enums\OrderStatus::MENUNGGU_VALIDASI_DESAIN,
-            'akad'             => \App\Enums\Akad::SALAM, 
+            'user_id'     => Auth::id(),
+            'total_price' => $totalBelanja,
+            'status'      => OrderStatus::MENUNGGU_VALIDASI_DESAIN,
+            'akad'        => $akad,
             'shipping_address' => json_encode([
-                'nama'          => $request->c_fname . ' ' . $request->c_lname,
-                'perusahaan'    => $request->c_companyname,
-                'alamat_lengkap'=> $request->c_address,
-                'negara_bagian' => $request->c_state_country,
-                'kodepos'       => $request->c_postal_zip,
-                'email'         => $request->c_email_address,
-                'telepon'       => $request->c_phone,
+                'nama'           => $user->name,
+                'email'          => $user->email,
+                'telepon'        => $request->phone,
+                'alamat_lengkap' => $request->address,
+                'provinsi'       => $request->province,
+                'kota'           => $request->city,
+                'kodepos'        => $request->postal_code,
             ]),
-            'note'             => $request->c_order_notes,
-            'order_date'       => now(),
-            'dp_amount'        => 0, 
-            'paid_amount'      => 0,
-            'refund_amount'    => 0,
+            'note' => $request->note,
+            'order_date'    => now(),
+            'dp_amount'     => $dp,
+            'paid_amount'   => 0,
+            'refund_amount' => 0,
         ]);
 
-        // 5. Simpan detail produk yang dibeli ke tabel Order Items
-        foreach ($cart as $id => $item) {
-            $hargaSatuan = $item['price'];
-            $jumlahBeli  = $item['quantity'];
+        foreach ($cart as $item) {
 
             OrdersItems::create([
                 'order_id'           => $order->id,
-                'product_variant_id' => $item['variant_id'] ?? $item['product_variant_id'] ?? 1, 
-                'quantity'           => $jumlahBeli,
-                'unit_price'         => $hargaSatuan,
-                'subtotal'           => $hargaSatuan * $jumlahBeli,
+                'product_variant_id' => $item['variant_id'] 
+                    ?? $item['product_variant_id'] 
+                    ?? 1,
+                'quantity'   => $item['quantity'],
+                'unit_price' => $item['price'],
+                'subtotal'   => $item['price'] * $item['quantity'],
             ]);
+
         }
-
-        // 6. Kosongkan keranjang belanja setelah sukses order
-        // 6. Kosongkan keranjang belanja setelah sukses order
         session()->forget('cart');
-
-        // 7. UBAH BARIS INI: Alihkan kembali ke halaman checkout index
-        return redirect()->route('checkout.index')->with('success_checkout', 'Pesanan Anda berhasil dibuat! Silakan lakukan validasi desain.');
+        
+        return redirect()
+            ->route('checkout.index')
+            ->with(
+                'success_checkout',
+                'Pesanan Anda berhasil dibuat! Silakan lakukan validasi desain.'
+            );
     }
 }

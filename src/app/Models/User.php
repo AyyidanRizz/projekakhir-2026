@@ -26,6 +26,12 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         'name',
         'email',
         'password',
+
+        'phone',
+        'address',
+        'province',
+        'city',
+        'postal_code',
     ];
 
     /**
