@@ -9,8 +9,8 @@
                         <div class="col-lg-5">
                             <div class="intro-excerpt">
                                 {{-- Mengurangi ukuran font h1 jika dirasa teksnya terlalu besar setelah hero diperkecil --}}
-                                <h1 style="font-size: 2.5rem;">Produk Sablon & Bordir</span></h1>
-                                <p class="mb-3">Wujudkan Produk Custom Impianmu dengan Proses yang Transparan dan Sesuai Syariah</p>
+                                <h1 style="font-size: 2.5rem;">Profile</span></h1>
+                                <p class="mb-3">Wujudkan Produk Custom Impianmu dengan Proses yang Transparan dan Sesuai Syariah.</p>
                                 <p class="mb-0">
                                 </p>
                             </div>

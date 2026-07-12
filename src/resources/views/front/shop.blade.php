@@ -9,10 +9,8 @@
             <div class="col-lg-5">
                 <div class="intro-excerpt">
                     <h1 style="font-size: 2.5rem;">Katalog</h1>
-                    <p class="mb-3">
-                        Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit.
-                        Aliquam vulputate velit imperdiet dolor tempor tristique.
-                    </p>
+                    <p class="mb-3">Wujudkan Produk Custom Impianmu dengan Proses yang Transparan dan Sesuai Syariah.</p>
+                    <p class="mb-0">
                 </div>
             </div>
 

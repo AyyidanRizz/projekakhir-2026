@@ -9,7 +9,7 @@
                             <div class="intro-excerpt">
                                 {{-- Mengurangi ukuran font h1 jika dirasa teksnya terlalu besar setelah hero diperkecil --}}
                                 <h1 style="font-size: 2.5rem;">Produk Sablon & Bordir</span></h1>
-                                <p class="mb-3">Wujudkan Produk Custom Impianmu dengan Proses yang Transparan dan Sesuai Syariah</p>
+                                <p class="mb-3">Wujudkan Produk Custom Impianmu dengan Proses yang Transparan dan Sesuai Syariah.</p>
                                 <p class="mb-0">
                                 </p>
                             </div>
@@ -64,7 +64,7 @@
         <!-- End Product Section -->
         
         <!-- Start We Help Section -->
-        <div class="we-help-section">
+        <div class="we-help-section pt-0 mt-0">
             <div class="container">
                 <div class="row justify-content-between">
                     <div class="col-lg-7 mb-5 mb-lg-0">
@@ -143,7 +143,7 @@
         <!-- End Popular Product -->
 
         <!-- Start Testimonial Slider -->
-        <div class="testimonial-section">
+        <div class="testimonial-section pt-0 mt-0">
             <div class="container">
                 <div class="row">
                     <div class="col-lg-7 mx-auto text-center">

@@ -10,8 +10,9 @@
                           <div class="intro-excerpt">
                               {{-- Mengurangi ukuran font h1 jika dirasa teksnya terlalu besar setelah hero diperkecil --}}
                               <h1 style="font-size: 2.5rem;">Checkout</h1>
-                              <p class="mb-3">Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate velit imperdiet dolor tempor tristique.</p>
-                          </div>
+                                <p class="mb-3">Wujudkan Produk Custom Impianmu dengan Proses yang Transparan dan Sesuai Syariah.</p>
+                                <p class="mb-0">
+                            </div>
                       </div>
                       <div class="col-lg-7">
                           <div class="hero-img-wrap">
@@ -350,7 +351,7 @@
                                     Scan QR Code untuk pembayaran
                                 </p>
                                 <img 
-                                    src="{{ asset('front/images/foto/photo-profile.jpeg') }}"
+                                    src="{{ asset('front/images/foto/QR-dummy.png') }}"
                                     width="200"
                                     alt="QRIS">
                             </div>

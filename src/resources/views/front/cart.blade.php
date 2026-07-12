@@ -1,8 +1,7 @@
 @extends('front.layouts.master')
 
 @section('content')
-    <!-- Start Hero Section -->
-{{-- Menambahkan inline style padding untuk mengontrol tinggi hero section --}}
+    {{-- Menambahkan inline style padding untuk mengontrol tinggi hero section --}}
     <div class="hero" style="padding: 30px 0 !important;"> 
         <div class="container">
             <div class="row justify-content-between">
@@ -10,7 +9,7 @@
                     <div class="intro-excerpt">
                         {{-- Mengurangi ukuran font h1 jika dirasa teksnya terlalu besar setelah hero diperkecil --}}
                         <h1 style="font-size: 2.5rem;">Keranjang</h1>
-                        <p class="mb-3">Donec vitae odio quis nisl dapibus malesuada. Nullam ac aliquet velit. Aliquam vulputate velit imperdiet dolor tempor tristique.</p>
+                        <p class="mb-3">Wujudkan Produk Custom Impianmu dengan Proses yang Transparan dan Sesuai Syariah.</p>
                     </div>
                 </div>
                 <div class="col-lg-7">
@@ -21,16 +20,23 @@
             </div>
         </div>
     </div>
-    <!-- End Hero Section -->
+    {{-- Blok Notifikasi (Aman dari Tabrakan Layout Margin Negatif) --}}
+    <div class="container mt-4">
+        @if(session('success'))
+            <div class="alert alert-success text-center" style="border-radius: 8px;">
+                {{ session('success') }}
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="alert alert-danger text-center" style="border-radius: 8px;">
+                {{ session('error') }}
+            </div>
+        @endif
+    </div>
 
-    <div class="untree_co-section before-footer-section">
-        <div class="container" style= "margin-top:-170px;">
-            @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
-            @if(session('error'))
-                <div class="alert alert-danger">{{ session('error') }}</div>
-            @endif
+    <div class="untree_co-section before-footer-section" style="padding-top: 10px;">
+        {{-- Menggunakan margin-top -120px agar pas jaraknya dengan komponen alert di atas --}}
+        <div class="container" style="{{ count($cart) > 0 ? 'margin-top: -120px;' : 'margin-top: 20px;' }}">
 
             @if(count($cart) > 0)
 
@@ -108,7 +114,6 @@
                     </div>
                 </form>
             </div>
-            <!-- CART TOTAL DI SEBELAH KANAN -->
             <div class="row justify-content-end">
                 <div class="col-md-3">
                     <div style="width:100%; max-width:600px;">
@@ -185,23 +190,4 @@
         }
     });
 </script>
-    <!-- Script Tombol Kuantitas Interaktif
-    <script>
-        document.querySelectorAll('.increase').forEach(button => {
-            button.addEventListener('click', function() {
-                let input = this.closest('.quantity-container').querySelector('.quantity-amount');
-                input.value = parseInt(input.value) + 1;
-            });
-        });
-
-        document.querySelectorAll('.decrease').forEach(button => {
-            button.addEventListener('click', function() {
-                let input = this.closest('.quantity-container').querySelector('.quantity-amount');
-                if (parseInt(input.value) > 1) {
-                    input.value = parseInt(input.value) - 1;
-                }
-            });
-        });
-    </script>
-    -->
 @endsection
