@@ -152,7 +152,7 @@ class CartController extends Controller
                         
                         if ($selisih > 0) { // Jika tombol "+" ditekan di halaman cart
                             if ($variant->stock < $selisih) {
-                                return redirect()->back()->with('error', 'Stok database tidak mencukupi.');
+                                return redirect()->back()->with('error', 'Stok produk tidak mencukupi.');
                             }
                             $variant->decrement('stock', $selisih);
                         } elseif ($selisih < 0) { // Jika tombol "-" ditekan di halaman cart

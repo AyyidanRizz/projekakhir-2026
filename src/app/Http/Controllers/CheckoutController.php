@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Shippings;
 use App\Models\Designs;
 use App\Enums\Courier;
 use App\Models\Orders;
 use App\Models\OrdersItems;
 use App\Models\Payments;
+use App\Models\ProductsVariants;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentType;
 use App\Enums\PaymentStatus;
@@ -92,6 +94,19 @@ class CheckoutController extends Controller
                 ->back()
                 ->with('error', 'Keranjang belanja Anda kosong!');
         }
+
+        foreach ($cart as $item) {
+            $variantId = $item['variant_id'] ?? $item['product_variant_id'] ?? 1;
+            $variant = ProductsVariants::find($variantId);
+
+            // Jika varian produk tidak ditemukan atau stoknya kurang dari qty yang dibeli user
+            if (!$variant || $variant->stock < $item['quantity']) {
+                return redirect()
+                    ->route('cart.index')
+                    ->with('error', 'Maaf, stok untuk produk "' . $item['name'] . '" tidak mencukupi atau telah habis dibeli oleh user lain. Silakan periksa kembali keranjang Anda.');
+            }
+        }
+        
         // Hitung total
         $totalBelanja = 0;
         $totalQuantity = 0;
@@ -119,16 +134,11 @@ class CheckoutController extends Controller
             'total_price' => $totalBelanja,
             'status'      => OrderStatus::MENUNGGU_VALIDASI_DESAIN,
             'akad'        => $akad,
-                'shipping_address' => json_encode([
-                    'nama'           => $user->name,
-                    'email'          => $user->email,
-                    'telepon'        => $request->phone,
-                    'alamat_lengkap' => $request->address,
-                    'provinsi'       => $request->province,
-                    'kota'           => $request->city,
-                    'kodepos'        => $request->postal_code,
-                    'kurir'          => $request->courier,
-                ]),
+                'shipping_address' => 
+                    $request->address .
+                    ', ' . $request->city .
+                    ', ' . $request->province .
+                    ', ' . $request->postal_code,
             'note' => $request->note,
             'order_date'    => now(),
             'dp_amount'     => $dp,
@@ -148,23 +158,25 @@ class CheckoutController extends Controller
         ]);
 
         foreach ($cart as $item) {
+            $variantId = $item['variant_id'] ?? $item['product_variant_id'] ?? 1;
 
             OrdersItems::create([
                 'order_id'           => $order->id,
-                'product_variant_id' => $item['variant_id'] 
-                    ?? $item['product_variant_id'] 
-                    ?? 1,
+                'product_variant_id' => $variantId,
                 'quantity'   => $item['quantity'],
                 'unit_price' => $item['price'],
                 'subtotal'   => $item['price'] * $item['quantity'],
             ]);
 
+            // Sekaligus mengurangi stok di database setelah order item berhasil dicatat
+            $variant = ProductsVariants::find($variantId);
+            if ($variant) {
+                $variant->decrement('stock', $item['quantity']);
+            }
         }
 
         Payments::create([
-
             'order_id' => $order->id,
-
             'type' => $akad === Akad::ISTISHNA
                 ? PaymentType::DP
                 : PaymentType::FULL,
@@ -174,6 +186,19 @@ class CheckoutController extends Controller
             'amount' => $dp,
             'status' => PaymentStatus::PENDING,
         ]);
+
+        Shippings::create([
+            'order_id' => $order->id,
+            'courier' => $request->courier,
+            'shipping_address' =>
+                $request->address .
+                ', ' . $request->city .
+                ', ' . $request->province .
+                ', ' . $request->postal_code,
+            'status' => 'pending',
+        ]);
+
+        /*
         // Menentukan sumber checkout
         $isDirectCheckout = session()->has('direct_checkout');
         $checkoutType = session()->get('checkout_type');
@@ -181,7 +206,11 @@ class CheckoutController extends Controller
             $cart = session()->get('direct_checkout', []);
         } else {
             $cart = session()->get('cart', []);
-        }
+        }*/
+            
+        session()->forget('cart');
+        session()->forget('direct_checkout');
+        session()->forget('checkout_type');
         
         return redirect()
             ->route('checkout.index')

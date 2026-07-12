@@ -44,7 +44,23 @@ public static function form(Form $form): Form
                             ->relationship('user', 'name')
                             ->required()
                             ->searchable()
-                            ->label('Pembeli'),
+                            ->reactive() // Tambahkan reactive agar perubahan mendongkrak komponen lain
+                            ->label('Pembeli')
+                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                // Jika pembeli dipilih, ambil data alamatnya dan set ke field shipping_address
+                                if ($state) {
+                                    $user = \App\Models\User::find($state);
+                                    if ($user) {
+                                        $fullAddress = $user->address . 
+                                            ($user->city ? ', ' . $user->city : '') . 
+                                            ($user->province ? ', ' . $user->province : '') . 
+                                            ($user->postal_code ? ', ' . $user->postal_code : '');
+                                        
+                                        $set('shipping_address', $fullAddress);
+                                        $set('shipping.shipping_address', $fullAddress);
+                                    }
+                                }
+                            }),
                         Forms\Components\Select::make('akad')
                             ->options(Akad::class)
                             ->required()
@@ -151,8 +167,6 @@ public static function form(Form $form): Form
                                         }
                                         static::updateAkadDanHarga($set, $get);
                                     }),
-
-                                                                // 3. Jumlah Item
                                 // 3. Jumlah Item dengan Validasi Keras Saat Simpan Form
                                 Forms\Components\TextInput::make('quantity')
                                     ->label('Jumlah')
@@ -161,46 +175,45 @@ public static function form(Form $form): Form
                                     ->minValue(1)
                                     ->default(1)
                                     ->reactive()
-                                    // KUNCI UTAMA: Validasi saat form diklik SUBMIT/SAVE
+                                    // UBAH HANYA BAGIAN RULES INI:
                                     ->rules([
-                                        fn (Forms\Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
+                                        fn (Forms\Get $get, $livewire): \Closure => function (string $attribute, $value, \Closure $fail) use ($get, $livewire) {
                                             $variantId = $get('product_variant_id');
-                                            if ($variantId) {
-                                                $variant = ProductsVariants::find($variantId);
-                                                
-                                                // Ambil info record saat ini untuk mode EDIT agar tidak salah hitung stok lama
-                                                $livewire = $get('../../'); // Naik ke konteks form utama
-                                                $isEditMode = isset($livewire->record);
-                                                
-                                                if ($variant) {
-                                                    $availableStock = $variant->stock;
+                                            if (!$variantId) {
+                                                return;
+                                            }
 
-                                                    // Jika dalam mode EDIT, tambahkan stok lama yang sudah terlanjur dipotong sebelumnya
-                                                    if ($isEditMode) {
-                                                        // Cari baris item ini di database berdasarkan ID (jaging jika ada)
-                                                        $itemId = $get('id');
-                                                        if ($itemId) {
-                                                            $oldItem = \App\Models\OrdersItems::find($itemId);
-                                                            if ($oldItem) {
-                                                                $availableStock += $oldItem->quantity;
-                                                            }
-                                                        }
-                                                    }
+                                            $variant = ProductsVariants::find($variantId);
+                                            if (!$variant) {
+                                                $fail("Varian produk tidak valid.");
+                                                return;
+                                            }
 
-                                                    if ((int)$value > $availableStock) {
-                                                        $fail("Jumlah pesanan melebihi stok yang tersedia (Maksimal stok: {$availableStock}).");
+                                            // Memeriksa mode edit langsung menggunakan dependency injection $livewire
+                                            $isEditMode = isset($livewire->record);
+                                            $availableStock = (int) $variant->stock;
+
+                                            if ($isEditMode) {
+                                                $itemId = $get('id');
+                                                if ($itemId) {
+                                                    $oldItem = \App\Models\OrdersItems::find($itemId);
+                                                    // Pastikan item yang ditemukan cocok dengan varian yang sedang divalidasi
+                                                    if ($oldItem && $oldItem->product_variant_id == $variantId) {
+                                                        $availableStock += (int) $oldItem->quantity;
                                                     }
                                                 }
                                             }
+
+                                            if ((int) $value > $availableStock) {
+                                                $fail("Stok tidak mencukupi untuk melakukan checkout! (Maksimal tersedia: {$availableStock} pcs).");
+                                            }
                                         },
                                     ])
-                                    // Validasi interaktif saat mengetik (opsional/real-time)
                                     ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
                                         $unitPrice = (float) ($get('unit_price') ?? 0);
                                         $set('subtotal', ((int)$state) * $unitPrice);
                                         static::updateAkadDanHarga($set, $get);
-                                    }),
-                                // 4. Harga Satuan (Otomatis Terkunci)
+                                    }),                                // 4. Harga Satuan (Otomatis Terkunci)
                                 Forms\Components\TextInput::make('unit_price')
                                     ->label('Harga Satuan')
                                     ->required()
