@@ -22,7 +22,7 @@ class CartController extends Controller
     }
 
     // 1. TAMBAH KE KERANJANG & POTONG STOK DI DATABASE
-    public function add(Request $request, $id)
+public function add(Request $request, $id)
     {
         $product = Products::findOrFail($id);
         
@@ -34,7 +34,7 @@ class CartController extends Controller
         $qtyRequested = intval($request->quantity);
         $variant = $product->variants()->where('id', $request->variant_id)->firstOrFail();
         
-        // Cek apakah stok mencukupi untuk jumlah yang diminta pembeli
+        // Tetap cek apakah permintaan awal masuk akal dengan stok yang ada
         if ($variant->stock < $qtyRequested) {
             return redirect()->back()->with('error', 'Stok tidak cukup. Hanya tersisa ' . $variant->stock . ' item.');
         }
@@ -43,7 +43,6 @@ class CartController extends Controller
         $cart = session()->get('cart', []);
 
         if (isset($cart[$cartKey])) {
-            // Cek lagi kalau digabung apakah melebihi stok
             if ($variant->stock < ($cart[$cartKey]['quantity'] + $qtyRequested)) {
                 return redirect()->back()->with('error', 'Gagal menambah. Jumlah di keranjang melebihi stok tersedia.');
             }
@@ -60,42 +59,28 @@ class CartController extends Controller
             ];
         }
 
-        // AKSI POTONG STOK: Kurangi sebanyak quantity yang diinput pembeli
-        // Di dalam fungsi add(), ubah bagian bawahnya menjadi seperti ini:
-        $variant->decrement('stock', $qtyRequested);
+        // === BARIS DECREMENT DI SINI SUDAH DIHAPUS ===
 
         session()->put('cart', $cart);
 
-        // HAPUS KEDUA SESSION INI SECARA BERSAMAAN:
         session()->forget('checkout_type');
         session()->forget('direct_checkout'); 
 
         return redirect()->route('cart.index')->with('success', 'Produk berhasil dimasukkan ke keranjang!');
     }
 
-    // 2. HAPUS DARI KERANJANG & KEMBALIKAN STOK KE DATABASE
+    // 2. HAPUS DARI KERANJANG (TANPA MENGEMBALIKAN STOK DATABASE)
     public function remove($key)
     {
         $cart = session()->get('cart', []);
 
         if (isset($cart[$key])) {
-            // Ambil data quantity yang ada di dalam keranjang sebelum dihapus
-            $quantityDiCart = $cart[$key]['quantity'];
-            $variantId = $cart[$key]['variant_id'];
-
-            // Cari varian produknya di database
-            $variant = ProductsVariants::find($variantId);
-            if ($variant) {
-                // AKSI KEMBALIKAN STOK: Tambah kembali stok di database sesuai jumlah di cart
-                $variant->increment('stock', $quantityDiCart);
-            }
-
-            // Hapus dari session keranjang
+            // === BARIS INCREMENT DI SINI SUDAH DIHAPUS ===
             unset($cart[$key]);
             session()->put('cart', $cart);
         }
 
-        return redirect()->back()->with('success', 'Produk dihapus dan stok telah dikembalikan.');
+        return redirect()->back()->with('success', 'Produk dihapus dari keranjang.');
     }
 
     // 3. BELI INSTANT (DIRECT CHECKOUT) & POTONG STOK
@@ -131,6 +116,7 @@ class CartController extends Controller
     }
 
     // 4. MEMPERBARUI QUANTITY DI HALAMAN CART (OPSIONAL - MENYESUAIKAN PERUBAHAN ANGKA)
+// 4. MEMPERBARUI QUANTITY DI HALAMAN CART (TANPA UPDATE STOK DATABASE)
     public function update(Request $request)
     {
         if ($request->cart_keys && $request->quantities) {
@@ -138,7 +124,6 @@ class CartController extends Controller
             
             foreach ($request->cart_keys as $index => $key) {
                 if (isset($cart[$key])) {
-                    $oldQty = $cart[$key]['quantity'];
                     $newQty = intval($request->quantities[$index]);
                     
                     if ($newQty <= 0) {
@@ -148,16 +133,11 @@ class CartController extends Controller
 
                     $variant = ProductsVariants::find($cart[$key]['variant_id']);
                     if ($variant) {
-                        $selisih = $newQty - $oldQty;
-                        
-                        if ($selisih > 0) { // Jika tombol "+" ditekan di halaman cart
-                            if ($variant->stock < $selisih) {
-                                return redirect()->back()->with('error', 'Stok produk tidak mencukupi.');
-                            }
-                            $variant->decrement('stock', $selisih);
-                        } elseif ($selisih < 0) { // Jika tombol "-" ditekan di halaman cart
-                            $variant->increment('stock', abs($selisih));
+                        // Validasi apakah jumlah baru melebihi stok total di database
+                        if ($variant->stock < $newQty) {
+                            return redirect()->back()->with('error', 'Waduh, stok tidak mencukupi! Sisa stok yang tersedia saat ini hanya ' . $variant->stock . ' pcs.');
                         }
+                        // === BARIS DECREMENT DAN INCREMENT DI SINI SUDAH DIHAPUS ===
                     }
 
                     $cart[$key]['quantity'] = $newQty;

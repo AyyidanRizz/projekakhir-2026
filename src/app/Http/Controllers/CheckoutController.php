@@ -42,16 +42,20 @@ class CheckoutController extends Controller
             $totalBelanja += $item['price'] * $item['quantity'];
             $totalQuantity += $item['quantity'];
         }
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
         return view('front.checkout', compact(
             'cart',
             'totalBelanja',
-            'totalQuantity'
+            'totalQuantity',
+            'user',
         ))->with('couriers', Courier::cases());
     }
 
-    public function store(Request $request)
+public function store(Request $request)
     {
-        // Validasi input
+        // 1. Validasi input form checkout
         $request->validate([
             'phone' => 'required|string|max:20',
             'address' => 'required|string',
@@ -67,10 +71,39 @@ class CheckoutController extends Controller
             'design_file' => 'required|file|mimes:jpg,jpeg,png,pdf|max:10240',
         ]);
 
+        // 2. Tentukan sumber keranjang belanja (Direct atau Cart biasa)
+        $checkoutType = session()->get('checkout_type');
+        if ($checkoutType === 'direct') {
+            $cart = session()->get('direct_checkout', []);
+        } else {
+            $cart = session()->get('cart', []);
+        }
+
+        if (empty($cart)) {
+            return redirect()
+                ->route('cart.index')
+                ->with('error', 'Keranjang belanja Anda kosong!');
+        }
+
+        // 3. Validasi real-time apakah stok di DB mencukupi sebelum memproses order
+        foreach ($cart as $item) {
+
+            $variantId = $item['variant_id'] ?? $item['product_variant_id'] ?? 1;
+            $variant = ProductsVariants::find($variantId);
+
+            if (!$variant || $variant->stock < $item['quantity']) {
+                return redirect()
+                    ->route('cart.index')
+                    ->with(
+                        'error',
+                        'Maaf, stok untuk produk "' . $item['name'] . '" tidak mencukupi atau telah habis dibeli oleh user lain. Silakan periksa kembali keranjang Anda.'
+                    );
+            }
+        }
+
+        // 4. Update data profile user secara otomatis dari data form checkout terbaru
         /** @var \App\Models\User $user */
         $user = Auth::user();
-
-        // Update data user
         $user->update([
             'phone'       => $request->phone,
             'address'     => $request->address,
@@ -78,36 +111,8 @@ class CheckoutController extends Controller
             'city'        => $request->city,
             'postal_code' => $request->postal_code,
         ]);
-        // Menentukan sumber checkout
-        $isDirectCheckout = session()->has('direct_checkout');
 
-        // Prioritaskan Direct Checkout.
-        // Jika tidak ada, gunakan Cart biasa.
-        $cart = session()->get('direct_checkout');
-
-        if (!$cart) {
-            $cart = session()->get('cart', []);
-        }
-
-        if (empty($cart)) {
-            return redirect()
-                ->back()
-                ->with('error', 'Keranjang belanja Anda kosong!');
-        }
-
-        foreach ($cart as $item) {
-            $variantId = $item['variant_id'] ?? $item['product_variant_id'] ?? 1;
-            $variant = ProductsVariants::find($variantId);
-
-            // Jika varian produk tidak ditemukan atau stoknya kurang dari qty yang dibeli user
-            if (!$variant || $variant->stock < $item['quantity']) {
-                return redirect()
-                    ->route('cart.index')
-                    ->with('error', 'Maaf, stok untuk produk "' . $item['name'] . '" tidak mencukupi atau telah habis dibeli oleh user lain. Silakan periksa kembali keranjang Anda.');
-            }
-        }
-        
-        // Hitung total
+        // 5. Hitung total belanja dan total quantity barang
         $totalBelanja = 0;
         $totalQuantity = 0;
         foreach ($cart as $item) {
@@ -115,41 +120,31 @@ class CheckoutController extends Controller
             $totalQuantity += $item['quantity'];
         }
 
+        // Tentukan jenis Akad dan besaran Down Payment (DP)
         if ($totalQuantity < 12) {
             $akad = Akad::SALAM;
         } else {
             $akad = Akad::from($request->akad);
         }
         
-        if ($akad === Akad::ISTISHNA) {
-            $dp = $totalBelanja * 0.5;
+        $dp = ($akad === Akad::ISTISHNA) ? ($totalBelanja * 0.5) : $totalBelanja;
 
-        } else {
-            $dp = $totalBelanja;
-
-        }
-
+        // 6. Buat baris Order utama di database (Variabel $order diinisialisasi secara resmi)
         $order = Orders::create([
             'user_id'     => Auth::id(),
             'total_price' => $totalBelanja,
             'status'      => OrderStatus::MENUNGGU_VALIDASI_DESAIN,
             'akad'        => $akad,
-                'shipping_address' => 
-                    $request->address .
-                    ', ' . $request->city .
-                    ', ' . $request->province .
-                    ', ' . $request->postal_code,
-            'note' => $request->note,
+            'shipping_address' => $request->address . ', ' . $request->city . ', ' . $request->province . ', ' . $request->postal_code,
+            'note'          => $request->note,
             'order_date'    => now(),
             'dp_amount'     => $dp,
             'paid_amount'   => 0,
             'refund_amount' => 0,
         ]);
 
-        $filePath = $request
-            ->file('design_file')
-            ->store('designs', 'public');
-
+        // 7. Simpan file berkas desain yang diunggah
+        $filePath = $request->file('design_file')->store('designs', 'public');
         Designs::create([
             'order_id'    => $order->id,
             'file_path'   => $filePath,
@@ -157,6 +152,7 @@ class CheckoutController extends Controller
             'uploaded_at' => now(),
         ]);
 
+        // 8. Daftarkan item belanja ke OrdersItems & HANYA potong stok di database di sini
         foreach ($cart as $item) {
             $variantId = $item['variant_id'] ?? $item['product_variant_id'] ?? 1;
 
@@ -167,47 +163,26 @@ class CheckoutController extends Controller
                 'unit_price' => $item['price'],
                 'subtotal'   => $item['price'] * $item['quantity'],
             ]);
-
-            // Sekaligus mengurangi stok di database setelah order item berhasil dicatat
-            $variant = ProductsVariants::find($variantId);
-            if ($variant) {
-                $variant->decrement('stock', $item['quantity']);
-            }
         }
 
+        // 9. Buat data tagihan Pembayaran (Payments)
         Payments::create([
             'order_id' => $order->id,
-            'type' => $akad === Akad::ISTISHNA
-                ? PaymentType::DP
-                : PaymentType::FULL,
-            'payment_method' => PaymentMethod::from(
-                $request->payment_method
-            ),
+            'type' => ($akad === Akad::ISTISHNA) ? PaymentType::DP : PaymentType::FULL,
+            'payment_method' => PaymentMethod::from($request->payment_method),
             'amount' => $dp,
             'status' => PaymentStatus::PENDING,
         ]);
 
+        // 10. Buat data Pengiriman (Shippings)
         Shippings::create([
             'order_id' => $order->id,
             'courier' => $request->courier,
-            'shipping_address' =>
-                $request->address .
-                ', ' . $request->city .
-                ', ' . $request->province .
-                ', ' . $request->postal_code,
+            'shipping_address' => $request->address . ', ' . $request->city . ', ' . $request->province . ', ' . $request->postal_code,
             'status' => 'pending',
         ]);
-
-        /*
-        // Menentukan sumber checkout
-        $isDirectCheckout = session()->has('direct_checkout');
-        $checkoutType = session()->get('checkout_type');
-        if ($checkoutType === 'direct') {
-            $cart = session()->get('direct_checkout', []);
-        } else {
-            $cart = session()->get('cart', []);
-        }*/
             
+        // 11. Bersihkan seluruh session belanja setelah checkout sukses
         session()->forget('cart');
         session()->forget('direct_checkout');
         session()->forget('checkout_type');

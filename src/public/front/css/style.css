@@ -756,3 +756,31 @@ textarea {
 .akad-box:hover {
     border-color: black;
 }
+
+.recommendation-wrapper{
+    display:flex;
+    overflow-x:auto;
+    gap:20px;
+    scroll-behavior:smooth;
+    padding-bottom:15px;
+}
+.recommendation-wrapper::-webkit-scrollbar{
+    display:none;
+}
+.recommendation-card{
+    min-width:260px;
+    max-width:260px;
+    flex-shrink:0;
+}
+.cart-table th {
+    padding-bottom: 20px !important;
+}
+
+.cart-table td {
+    padding-top: 25px !important;
+    padding-bottom: 25px !important;
+}
+.checkout-btn {
+    width:100%;
+    display:block;
+}

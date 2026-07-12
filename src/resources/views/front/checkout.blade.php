@@ -372,6 +372,8 @@
             </div>
           </div>
 
+          
+
 <script>
 document.addEventListener('DOMContentLoaded', function(){
     const total = {{ $totalBelanja }};

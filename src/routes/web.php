@@ -36,10 +36,10 @@ Route::middleware('auth')->group(function () {
 Route::get('/', [ProductsController::class, 'home'])->name('home');
 
 // Halaman Shop Utama
-Route::get('/shop', [ProductsController::class, 'index'])->name('front.shop');
+//Route::get('/shop', [ProductsController::class, 'index'])->name('front.shop');
 
 // Halaman Detail Produk (Menggunakan Route Model Binding)
-Route::get('/shop/{product}', [ProductsController::class, 'show'])->name('front.shop.detail');
+//Route::get('/shop/{product}', [ProductsController::class, 'show'])->name('front.shop.detail');
 
 // Halaman Statis
 Route::get('/about', function () {
@@ -49,6 +49,22 @@ Route::get('/services', function () {
     return view('front.services');
 });
 
+// ==================== SHOP ====================
+
+// Halaman Shop Utama
+Route::get('/shop', [ProductsController::class, 'index'])
+    ->name('front.shop');
+
+// Halaman Detail Produk
+Route::get('/shop/{product}', [ProductsController::class, 'show'])
+    ->name('front.shop.detail');
+
+// Cart
+Route::post('/cart/add/{id}', [CartController::class, 'add'])
+    ->name('cart.add');
+
+/*Route::get('/products/{slug}', [ProductsController::class, 'show'])
+    ->name('products.show');*/
 
 // ==================== KERAJANG (CART) ====================
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');

@@ -23,7 +23,7 @@
 
                 <hr>
 
-                <form id="product-form" action="{{ route('cart.add', $product->id) }}" method="POST">
+                <form id="product-form" action="{{ route('cart.add', ['id' => $product->id]) }}" method="POST">
                     @csrf
                     <input type="hidden" name="product_id" value="{{ $product->id }}">
 
@@ -111,7 +111,50 @@
         </div>
     </div>
 </div>
-
+<div class="untree_co-section pt-0">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold text-black">
+                Rekomendasi Produk
+            </h2>
+            <div>
+                <button class="btn btn-light" id="scroll-left">
+                    ←
+                </button>
+                <button class="btn btn-light" id="scroll-right">
+                    →
+                </button>
+            </div>
+        </div>
+        <div class="recommendation-wrapper" id="recommendation-wrapper">
+            @foreach($recommendedProducts as $item)
+                <div class="recommendation-card">
+                    <a href="{{ route('front.shop.detail', $item->slug) }}"
+                        class="text-decoration-none text-dark">
+                        <div class="card border-0 shadow-sm h-100">
+                            <img
+                                src="{{ asset('storage/'.$item->image) }}"
+                                class="card-img-top"
+                                style="height:220px; object-fit:cover;">
+                            <div class="card-body">
+                                <h6 class="fw-bold">
+                                    {{ $item->name }}
+                                </h6>
+                                <p class="mb-3 text-success fw-bold">
+                                    Rp
+                                    {{ number_format($item->base_price * 1000,0,',','.') }}
+                                </p>
+                                <span class="btn btn-outline-dark btn-sm w-100">
+                                    Lihat Produk
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</div>
 <script>
     document.getElementById('variant_select').addEventListener('change', function() {
         let selectedOption = this.options[this.selectedIndex];
@@ -168,5 +211,18 @@
             window.location.reload();
         }
     });
+    const wrapper=document.getElementById('recommendation-wrapper');
+    document.getElementById('scroll-right').onclick=function(){
+        wrapper.scrollBy({
+            left:300,
+            behavior:'smooth'
+        });
+    }
+    document.getElementById('scroll-left').onclick=function(){
+        wrapper.scrollBy({
+            left:-300,
+            behavior:'smooth'
+        });
+    }
 </script>
 @endsection

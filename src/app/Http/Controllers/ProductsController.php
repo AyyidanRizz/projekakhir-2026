@@ -36,7 +36,16 @@ class ProductsController extends Controller
     {
         $product->load('variants');
 
-        return view('front.show', compact('product'));
+        $recommendedProducts = Products::where('is_active', true)
+            ->where('id', '!=', $product->id)
+            ->with('variants')
+            ->take(8)
+            ->get();
+
+        return view('front.show', compact(
+            'product',
+            'recommendedProducts'
+        ));
     }
 
     public function home()
@@ -49,4 +58,6 @@ class ProductsController extends Controller
 
         return view('front.index', compact('products'));
     }
+
+    
 }

@@ -24,7 +24,7 @@
     <!-- End Hero Section -->
 
     <div class="untree_co-section before-footer-section">
-        <div class="container">
+        <div class="container" style= "margin-top:-170px;">
             @if(session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
             @endif
@@ -33,12 +33,12 @@
             @endif
 
             @if(count($cart) > 0)
+
             <div class="row mb-5">
-                <!-- FORM DIUBAH KE ROUTE UPDATE CART -->
                 <form class="col-md-12" action="{{ route('cart.update') }}" method="POST">
                     @csrf
                     <div class="site-blocks-table">
-                        <table class="table">
+                        <table class="table cart-table">
                             <thead>
                                 <tr>
                                     <th class="product-thumbnail">Image</th>
@@ -53,103 +53,116 @@
                                 @foreach($cart as $key => $item)
                                 <tr>
                                     <td class="product-thumbnail">
-                                        <img src="{{ asset('storage/' . $item['image']) }}" alt="Image" class="img-fluid" style="max-width: 100px;">
+                                        <img src="{{ asset('storage/' . $item['image']) }}" 
+                                            alt="Image" 
+                                            class="img-fluid" 
+                                            style="max-width:100px;">
                                     </td>
                                     <td class="product-name">
                                         <h2 class="h5 text-black">{{ $item['name'] }}</h2>
-                                        <small class="text-muted">Varian: {{ $item['variant_name'] }}</small>
+                                        <small class="text-muted">
+                                            Varian: {{ $item['variant_name'] }}
+                                        </small>
                                     </td>
-                                    <td>Rp {{ number_format($item['price'], 0, ',', '.') }}</td>
                                     <td>
-                                        <!-- Hidden input untuk tracking session key -->
-                                        <input type="hidden" name="cart_keys[]" value="{{ $key }}">
-                                        
-                                        <div class="input-group mb-3 d-flex align-items-center quantity-container" style="max-width: 120px;">
+                                        Rp {{ number_format($item['price'],0,',','.') }}
+                                    </td>
+                                    <td>
+                                        <input type="hidden" 
+                                            name="cart_keys[]" 
+                                            value="{{ $key }}">
+                                        <div class="input-group mb-3 d-flex align-items-center quantity-container" 
+                                            style="max-width:120px;">
                                             <div class="input-group-prepend">
-                                                <button class="btn btn-outline-black decrease" type="button">&minus;</button>
+                                                <button class="btn btn-outline-black decrease" 
+                                                        type="button">
+                                                    &minus;
+                                                </button>
                                             </div>
-                                            <input type="text" name="quantities[]" class="form-control text-center quantity-amount" value="{{ $item['quantity'] }}" placeholder="" readonly>
+                                            <input type="text" 
+                                                name="quantities[]" 
+                                                class="form-control text-center quantity-amount"
+                                                value="{{ $item['quantity'] }}"
+                                                readonly>
                                             <div class="input-group-append">
-                                                <button class="btn btn-outline-black increase" type="button">&plus;</button>
+                                                <button class="btn btn-outline-black increase" 
+                                                        type="button">
+                                                    &plus;
+                                                </button>
                                             </div>
                                         </div>
                                     </td>
-                                    <td>Rp {{ number_format($item['price'] * $item['quantity'], 0, ',', '.') }}</td>
-                                    <td><a href="{{ route('cart.remove', $key) }}" class="btn btn-black btn-sm">X</a></td>
+                                    <td>
+                                        Rp {{ number_format($item['price'] * $item['quantity'],0,',','.') }}
+                                    </td>
+                                    <td>
+                                        <a href="{{ route('cart.remove',$key) }}" 
+                                        class="btn btn-black btn-sm">
+                                            X
+                                        </a>
+                                    </td>
                                 </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </form>
             </div>
-
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="row mb-5">
-                        <div class="col-md-6 mb-3 mb-md-0">
-                            <!-- Men-trigger submit form update diatas -->
-                            <button type="submit" class="btn btn-black btn-sm btn-block">Update Cart</button>
-                        </div>
-                </form> <!-- Penutup Form Update di luar row tombol agar mencakup tabel -->
-                        <div class="col-md-6">
-                            <a href="{{ url('/') }}" class="btn btn-outline-black btn-sm btn-block text-center d-block">Continue Shopping</a>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-12">
-                            <label class="text-black h4" for="coupon">Coupon</label>
-                            <p>Enter your coupon code if you have one.</p>
-                        </div>
-                        <div class="col-md-8 mb-3 mb-md-0">
-                            <input type="text" class="form-control py-3" id="coupon" placeholder="Coupon Code">
-                        </div>
-                        <div class="col-md-4">
-                            <button class="btn btn-black">Apply Coupon</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-6 pl-5">
-                    <div class="row justify-content-end">
-                        <div class="col-md-7">
-                            <div class="row">
-                                <div class="col-md-12 text-right border-bottom mb-5">
-                                    <h3 class="text-black h4 text-uppercase">Cart Totals</h3>
-                                </div>
+            <!-- CART TOTAL DI SEBELAH KANAN -->
+            <div class="row justify-content-end">
+                <div class="col-md-3">
+                    <div style="width:100%; max-width:600px;">
+                        <div class="row">
+                            <div class="col-md-12 border-bottom mb-5 pb-2">
+                                <h3 class="text-black h2 text-uppercase">
+                                    Cart Totals
+                                </h3>
                             </div>
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <span class="text-black">Subtotal</span>
-                                </div>
-                                <div class="col-md-6 text-right">
-                                    <strong class="text-black">Rp {{ number_format($subtotal, 0, ',', '.') }}</strong>
-                                </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <span class="text-black">
+                                    Subtotal
+                                </span>
                             </div>
-                            <div class="row mb-5">
-                                <div class="col-md-6">
-                                    <span class="text-black">Total</span>
-                                </div>
-                                <div class="col-md-6 text-right">
-                                    <strong class="text-black">Rp {{ number_format($subtotal, 0, ',', '.') }}</strong>
-                                </div>
+                            <div class="col-6 text-right">
+                                <strong class="text-black">
+                                    Rp {{ number_format($subtotal,0,',','.') }}
+                                </strong>
+                            </div>
+                        </div>
+                        <div class="row mb-5">
+                            <div class="col-6">
+                                <span class="text-black">
+                                    Total
+                                </span>
+                            </div>
+                            <div class="col-6 text-right">
+                                <strong class="text-black">
+                                    Rp {{ number_format($subtotal,0,',','.') }}
+                                </strong>
                             </div>
 
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <a href="{{ url('/checkout') }}" class="btn btn-black btn-lg py-3 btn-block text-center d-block">Proceed To Checkout</a>
-                                </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <a href="{{ route('checkout.index') }}" 
+                                class="btn btn-black btn-lg py-3 btn-block text-center">
+                                    Checkout Keranjang
+                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             @else
-            <div class="text-center py-5">
-                <h3>Keranjang belanja kamu masih kosong.</h3>
-                <a href="{{ url('/') }}" class="btn btn-black mt-3">Mulai Belanja</a>
-            </div>
+                <div class="text-center py-5">
+                    <h3>Keranjang belanja kamu masih kosong.</h3>
+
+                    <a href="{{ route('front.shop') }}" class="btn btn-black mt-3">
+                        Mulai Belanja
+                    </a>
+                </div>
             @endif
         </div>
     </div>
