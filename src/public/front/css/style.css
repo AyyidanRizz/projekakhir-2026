@@ -784,3 +784,100 @@ textarea {
     width:100%;
     display:block;
 }
+
+/* Card Container Utama */
+.profile-card {
+    background: #ffffff;
+    border: none !important;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.02);
+    padding: 40px;
+    max-width: 850px;
+    margin: 0 auto;
+}
+
+/* Avatar Style dengan Tombol Edit Overlay */
+.avatar-wrapper {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin-bottom: 0;
+}
+
+.avatar-img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+}
+
+.avatar-edit-label {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    background: #151615;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 2px solid #fff;
+    transition: transform 0.2s;
+}
+
+.avatar-edit-label:hover {
+    transform: scale(1.1);
+}
+
+.avatar-edit-label svg {
+    width: 14px;
+    height: 14px;
+    fill: #fff;
+}
+
+/* Kustomisasi Input Form */
+.profile-form label {
+    font-size: 0.85rem;
+    color: #7e7e7e;
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.profile-form .form-control {
+    background: #f9f9f9;
+    border: 1px solid #f1f1f1;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+.profile-form .form-control:focus {
+    background: #fff;
+    border-color: #151615;
+    box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.1);
+    outline: none;
+}
+
+/* Tombol Oranye Efek Glowing */
+.btn-save-profile {
+    background: #151615;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 12px 40px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.btn-save-profile:hover {
+    background: #151615;
+    box-shadow: 0 10px 24px rgba(255, 87, 34, 0.45);
+    transform: translateY(-1px);
+    color: white;
+}
