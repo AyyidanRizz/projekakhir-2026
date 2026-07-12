@@ -37,8 +37,10 @@
             {{-- MODIFIKASI TAMPILAN: Form hanya muncul jika keranjang tidak kosong --}}
             @if(!empty($cart))
 
-              <!-- Pembuka Form -->
-              <form action="{{ route('checkout.store') }}" method="POST">
+            <!-- Pembuka Form -->
+            <form action="{{ route('checkout.store') }}"
+                method="POST"
+                enctype="multipart/form-data">
                 @csrf
 
                 <div class="row">
@@ -155,6 +157,26 @@
                                 name="note"
                                 rows="4"
                                 class="form-control">{{ old('note') }}</textarea>
+                        </div>
+                        <div class="mt-3">
+                            <label class="form-label">
+                                Upload Desain Kustom
+                            </label>
+                            <input
+                                type="file"
+                                name="design_file"
+                                class="form-control"
+                                accept=".jpg,.jpeg,.png,.pdf"
+                                required>
+                            <small class="text-muted">
+                                Format yang didukung:
+                                JPG, JPEG, PNG, PDF.
+                            </small>
+                            @error('design_file')
+                                <div class="text-danger mt-1">
+                                    {{ $message }}
+                                </div>
+                            @enderror
                         </div>
                     </div>
                   </div>

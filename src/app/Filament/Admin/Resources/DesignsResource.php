@@ -84,7 +84,7 @@ class DesignsResource extends Resource
                     ->action(function ($record) {
                         $record->update(['status' => DesignStatus::APPROVED]);
                         // Update status order menjadi menunggu_pembayaran
-                        $record->order->update(['status' => 'menunggu_pembayaran']);
+                        $record->order->update(['status' => 'Menunggu']);
                     })
                     ->requiresConfirmation()
                     ->modalHeading('Setujui Desain')

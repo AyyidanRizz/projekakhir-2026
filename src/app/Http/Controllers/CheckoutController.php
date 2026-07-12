@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Designs;
 use App\Enums\Courier;
 use App\Models\Orders;
 use App\Models\OrdersItems;
@@ -13,6 +14,7 @@ use App\Enums\Akad;
 use App\Enums\OrderStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Enum as EnumRule;
 
 class CheckoutController extends Controller
@@ -60,6 +62,7 @@ class CheckoutController extends Controller
             ],
             'akad' => 'nullable|string',
             'payment_method' => 'required|in:virtual_account,qris',
+            'design_file' => 'required|file|mimes:jpg,jpeg,png,pdf|max:10240',
         ]);
 
         /** @var \App\Models\User $user */
@@ -131,6 +134,17 @@ class CheckoutController extends Controller
             'dp_amount'     => $dp,
             'paid_amount'   => 0,
             'refund_amount' => 0,
+        ]);
+
+        $filePath = $request
+            ->file('design_file')
+            ->store('designs', 'public');
+
+        Designs::create([
+            'order_id'    => $order->id,
+            'file_path'   => $filePath,
+            'status'      => \App\Enums\DesignStatus::PENDING,
+            'uploaded_at' => now(),
         ]);
 
         foreach ($cart as $item) {
