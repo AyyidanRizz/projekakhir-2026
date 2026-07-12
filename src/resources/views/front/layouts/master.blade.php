@@ -21,7 +21,7 @@
 		<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 		<link href="{{ asset('front/css/tiny-slider.css') }}" rel="stylesheet">
 		<link href="{{ asset('front/css/style.css') }}" rel="stylesheet">
-		<title>Furni Free Bootstrap 5 Template for Furniture and Interior Design Websites by Untree.co </title>
+		<title>Karsa Cloth Co. </title>
 	<!-- Kustom CSS untuk mengecilkan skala tampilan website agar lebih rapi -->
 	</head>
 
