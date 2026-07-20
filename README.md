@@ -36,7 +36,7 @@ Dalam perdagangan konvensional, sistem *pre-order* atau pemesanan kustom sering 
 
 ## 🚀 Fitur Utama
 
-* **Sistem Transaksi Syariah:** Pemilihan jenis akad (Salam / Istishna') yang disertai lembar kesepakatan digital (*ijab qabul*).
+* **Sistem Transaksi Syariah:** Pemilihan jenis akad (Salam / Istishna') yang disertai lembar kesepakatan digital.
 * **Manajemen Kustomisasi Produk:** Fitur bagi pelanggan untuk mengunggah desain sablon/bordir, memilih jenis bahan, ukuran, dan kuantitas.
 * **Dashboard Admin Powerful:** Menggunakan **Filament v3** untuk pengelolaan data produk, pelacakan pesanan, status produksi, hingga validasi pembayaran secara *real-time*.
 * **Manajemen Pengguna:** Multi-user role (Admin, Pembuat/Pengrajin, dan Pelanggan).
@@ -54,7 +54,7 @@ Dalam perdagangan konvensional, sistem *pre-order* atau pemesanan kustom sering 
 * **Web Server:** Nginx
 * **Reverse Proxy:** Nginx Proxy Manager
 * **SSL & DNS:** Cloudflare
-* **Database:** MySQL / PostgreSQL
+* **Database:** MariaDB
 
 ---
 
@@ -68,3 +68,12 @@ Ikuti langkah-langkah berikut untuk menjalankan proyek ini di komputer Anda:
 git clone https://github.com/AyyidanRizz/projekakhir-2026.git
 cd projekakhir-2026
 ```
+
+---
+
+Nama: Siti Ahsanu Nadiyya Rizal
+NIM: 20240801155
+Jurusan: Teknik Informatika
+Fakultas: Ilmu Komputer
+
+---
