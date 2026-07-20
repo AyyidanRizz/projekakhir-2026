@@ -71,9 +71,6 @@ cd projekakhir-2026
 
 ---
 
-Nama: Siti Ahsanu Nadiyya Rizal
-NIM: 20240801155
-Jurusan: Teknik Informatika
-Fakultas: Ilmu Komputer
+Nama: Siti Ahsanu Nadiyya Rizal (20240801155)
 
 ---
